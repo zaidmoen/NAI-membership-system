@@ -1,4 +1,5 @@
 import logo from '../assets/nai-logo.png'
+import GooeyTextReveal from './ui/gooey-text-reveal'
 
 // Shared layout for both pages: brand panel next to a white card
 export default function AuthShell({ variant, title, subtitle, children }) {
@@ -36,9 +37,17 @@ export default function AuthShell({ variant, title, subtitle, children }) {
           <div className="brand__logo">
             <img src={logo} alt="شعار جمعية النجاح للذكاء الاصطناعي NAI" />
           </div>
-          <h1 className="brand__title">جمعية النجاح للذكاء الاصطناعي</h1>
-          <p className="brand__subtitle">{title}</p>
-          <p className="brand__text">{subtitle}</p>
+          <GooeyTextReveal
+            className="brand__copy"
+            mode="scroll"
+            duration={1.4}
+            stagger={0.12}
+            blurAmount={0.4}
+          >
+            <h1 className="brand__title" data-gooey-reveal-item>جمعية النجاح للذكاء الاصطناعي</h1>
+            <p className="brand__subtitle" data-gooey-reveal-item>{title}</p>
+            <p className="brand__text" data-gooey-reveal-item>{subtitle}</p>
+          </GooeyTextReveal>
           <p className="brand__tagline">
             <span>طلابنا</span><i /><span>أفكارنا</span><i /><span>مجتمعنا</span><i /><span>لمستقبل أذكى</span>
           </p>
