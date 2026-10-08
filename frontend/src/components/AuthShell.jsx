@@ -40,7 +40,7 @@ export default function AuthShell({ variant, title, subtitle, children, formOpen
           {children}
         </section>
 
-        <aside className="brand">
+        <aside className={`brand${variant === 'student' && formOpen ? ' brand--hidden-mobile' : ''}`}>
           <div className="brand__logo">
             <img src={logo} alt="شعار جمعية النجاح للذكاء الاصطناعي NAI" />
           </div>
