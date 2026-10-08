@@ -416,6 +416,9 @@ button, input { font: inherit; }
     min-height: 100svh;
     padding: max(20px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
     background-position: 22% center;
+    background-image:
+      linear-gradient(180deg, rgba(20, 13, 70, .2) 0%, rgba(20, 13, 70, .52) 42%, rgba(20, 13, 70, .82) 100%),
+      url('../assets/university-bg.jpg');
   }
 
   .shell::before { opacity: .32; }
@@ -425,9 +428,14 @@ button, input { font: inherit; }
   .brand { width: 100%; }
   .brand__logo {
     margin-bottom: 8px;
-    padding: 4px 8px;
+    padding: 8px 14px;
+    border: 1px solid rgba(255, 255, 255, .72);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, .9);
+    box-shadow: 0 8px 24px rgba(12, 5, 48, .2);
+    backdrop-filter: blur(8px);
   }
-  .brand__logo img { width: min(205px, 56vw); }
+  .brand__logo img { width: min(230px, 62vw); }
   .brand__title { margin-bottom: 4px; font-size: 1.3rem; }
   .brand__subtitle { margin-bottom: 0; font-size: 1.02rem; }
 
