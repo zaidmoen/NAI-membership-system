@@ -207,7 +207,7 @@ export default function AdminDashboardPage() {
               <table className="admin-table">
                 <thead><tr>
                   <th scope="col">الطالب</th><th scope="col">الرقم الجامعي</th><th scope="col">التخصص</th>
-                  <th scope="col">رقم الواتساب</th><th scope="col">تاريخ التسجيل</th><th scope="col">الحالة</th><th scope="col">الإجراء</th>
+                  <th scope="col">رقم الواتساب</th><th scope="col">تاريخ التسجيل</th><th scope="col">تأكيد الدفع</th><th scope="col">أكده</th><th scope="col">الحالة</th><th scope="col">الإجراء</th>
                 </tr></thead>
                 <tbody>
                   {students.map((student) => (
@@ -217,6 +217,8 @@ export default function AdminDashboardPage() {
                       <td data-label="التخصص">{student.major}</td>
                       <td data-label="رقم الواتساب" dir="ltr">{student.whatsapp}</td>
                       <td data-label="تاريخ التسجيل">{formatDate(student.registered_at)}</td>
+                      <td data-label="تأكيد الدفع">{formatDate(student.payment_confirmed_at)}</td>
+                      <td data-label="أكده">{student.payment_confirmed_by || '—'}</td>
                       <td data-label="الحالة"><span className={`admin-status admin-status--${student.status}`}><i />{STATUS_LABELS[student.status]}</span></td>
                       <td data-label="الإجراء">
                         {student.status === 'pending_payment' ? (
