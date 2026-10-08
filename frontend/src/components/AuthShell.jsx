@@ -2,7 +2,7 @@ import logo from '../assets/nai-logo.png'
 import GooeyTextReveal from './ui/gooey-text-reveal'
 
 // Shared layout for both pages: brand panel next to a white card
-export default function AuthShell({ variant, title, subtitle, children }) {
+export default function AuthShell({ variant, title, subtitle, children, formOpen = true, formRef, onStartRegistration }) {
   return (
     <div className={`shell shell--${variant}`}>
       <div className="shell__glow shell__glow--one" />
@@ -30,7 +30,8 @@ export default function AuthShell({ variant, title, subtitle, children }) {
 
       <main className="shell__inner">
         <section
-          className="card"
+          ref={formRef}
+          className={`card${variant === 'student' && !formOpen ? ' card--mobile-hidden' : ''}`}
           id={variant === 'student' ? 'membership-form' : undefined}
           tabIndex={variant === 'student' ? -1 : undefined}
           aria-labelledby="card-title"
@@ -54,12 +55,18 @@ export default function AuthShell({ variant, title, subtitle, children }) {
             <p className="brand__text" data-gooey-reveal-item>{subtitle}</p>
           </GooeyTextReveal>
           {variant === 'student' && (
-            <a className="brand__cta" href="#membership-form">
-              <span>ابدأ الانتساب</span>
+            <button
+              className="brand__cta"
+              type="button"
+              onClick={onStartRegistration}
+              aria-controls="membership-form"
+              aria-expanded={formOpen}
+            >
+              <span>انتسب الآن</span>
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="m7 9 5 5 5-5M7 14l5 5 5-5" />
               </svg>
-            </a>
+            </button>
           )}
           <p className="brand__tagline">
             <span>طلابنا</span><i /><span>أفكارنا</span><i /><span>مجتمعنا</span><i /><span>لمستقبل أذكى</span>
