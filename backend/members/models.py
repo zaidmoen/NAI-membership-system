@@ -8,10 +8,12 @@ class Student(models.Model):
         ACTIVE_MEMBER = "active_member", "Active Member"
 
     full_name = models.CharField(max_length=150)
+    major = models.CharField(max_length=100)
 
     # Keep this as text so a university ID can start with zero
     university_id = models.CharField(max_length=30, unique=True)
 
+    whatsapp = models.CharField(max_length=25)
     status = models.CharField(
         max_length=20,
         choices=Status.choices,

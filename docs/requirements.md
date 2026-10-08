@@ -10,7 +10,7 @@
 
 The NAI Membership System records student requests to join the Najah AI Society and helps authorized association administrators track membership payments collected in person
 
-A student submits a full name and university ID through a public form. The record remains pending until an administrator confirms that payment was received at the association desk
+A student submits a full name, major, university ID, and WhatsApp number through a public form. The record remains pending until an administrator confirms that payment was received at the association desk
 
 This document describes the agreed MVP behavior. It does not prescribe detailed implementation choices such as the database engine, API framework, or deployment platform
 
@@ -40,7 +40,7 @@ This document describes the agreed MVP behavior. It does not prescribe detailed 
 
 A student can:
 - Open the public membership form
-- Submit a full name and university ID
+- Submit a full name, major, university ID, and WhatsApp number
 - Receive confirmation that the request was recorded, or a useful validation message
 
 A student does not need a password or account in the MVP. Students cannot browse, search, or view other student records
@@ -50,7 +50,7 @@ A student does not need a password or account in the MVP. Students cannot browse
 An authenticated administrator can:
 - Open the management dashboard
 - View registered student records
-- Search by full name or university ID
+- Search by full name, university ID, or WhatsApp number
 - Filter records by membership status
 - Confirm that an in-person payment was received
 - View the payment confirmation time and the administrator who recorded it
@@ -67,7 +67,9 @@ The database design task should support the following information
 | --- | --- |
 | Student record ID | A unique internal identifier |
 | Full name | Required text, trimmed before saving |
+| Major | Required text describing the student's field of study |
 | University ID | Required text and unique across student records |
+| WhatsApp number | Required contact number, stored as text |
 | Membership status | One of the statuses defined in Section 6 |
 | Registration date and time | Set by the system when the record is created |
 | Payment confirmation date and time | Empty until payment is confirmed |
@@ -83,9 +85,11 @@ The system must identify the administrator who performed a payment confirmation.
 
 ### FR-01 — Public registration form
 
-The system must provide a public form with exactly two required student fields:
+The system must provide a public form with exactly four required student fields:
 - Full name
+- Major
 - University ID
+- WhatsApp number
 
 The MVP form must not ask students for a password, email address, or payment details
 
@@ -93,8 +97,11 @@ The MVP form must not ask students for a password, email address, or payment det
 
 Before creating a record, the system must:
 - Reject a missing or whitespace-only full name
+- Reject a missing or whitespace-only major
 - Reject a missing or whitespace-only university ID
-- Trim leading and trailing whitespace from both values
+- Reject a missing, whitespace-only, or invalid WhatsApp number
+- Trim leading and trailing whitespace from submitted values
+- Normalize the WhatsApp number by removing spaces, hyphens, and parentheses
 - Reject a university ID that already exists
 - Return a clear message that identifies the problem without revealing private student record details
 
@@ -120,7 +127,9 @@ A public student registration request must not grant access to the admin dashboa
 
 The dashboard must display registered students with, at minimum:
 - Full name
+- Major
 - University ID
+- WhatsApp number
 - Membership status
 - Registration date
 - Payment confirmation date when available
@@ -133,6 +142,7 @@ The interface must make pending and active records easy to distinguish
 An administrator must be able to search using:
 - A full or partial student name
 - A university ID
+- A WhatsApp number
 
 The results must show enough information for the administrator to confirm that the correct student was found
 
@@ -188,7 +198,7 @@ A payment reversal or correction workflow is not defined in this MVP. It must be
 ### Student registration
 
 1. The student opens the public membership page
-2. The student enters a full name and university ID
+2. The student enters a full name, major, university ID, and WhatsApp number
 3. The student submits the form
 4. The system validates the values and checks for an existing university ID
 5. If valid, the system creates a pending record and confirms submission
@@ -197,7 +207,7 @@ A payment reversal or correction workflow is not defined in this MVP. It must be
 ### Administrator payment confirmation
 
 1. The administrator signs in
-2. The administrator searches by name or university ID
+2. The administrator searches by name, university ID, or WhatsApp number
 3. The administrator checks the result against the student at the desk
 4. After receiving payment, the administrator confirms it
 5. The system records the administrator and confirmation time

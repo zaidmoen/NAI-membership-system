@@ -7,16 +7,20 @@ from members.models import Student
 class StudentAdmin(admin.ModelAdmin):
     list_display = (
         "full_name",
+        "major",
         "university_id",
+        "whatsapp",
         "status",
         "registered_at",
         "payment_confirmed_at",
     )
     list_filter = ("status",)
-    search_fields = ("full_name", "university_id")
+    search_fields = ("full_name", "major", "university_id", "whatsapp")
     readonly_fields = (
         "full_name",
+        "major",
         "university_id",
+        "whatsapp",
         "status",
         "registered_at",
         "payment_confirmed_at",
