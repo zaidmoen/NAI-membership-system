@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import AuthShell from '../components/AuthShell'
 import Field from '../components/Field'
 import Alert from '../components/Alert'
@@ -14,6 +14,16 @@ export default function MembershipRegistrationPage() {
   const [formError, setFormError] = useState('')
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
+  const [formOpen, setFormOpen] = useState(false)
+  const formRef = useRef(null)
+
+  useEffect(() => {
+    if (!formOpen) return
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    formRef.current?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' })
+    formRef.current?.focus({ preventScroll: true })
+  }, [formOpen])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -56,6 +66,9 @@ export default function MembershipRegistrationPage() {
       variant="student"
       title="بوابة الانتساب وإدارة العضوية"
       subtitle="انضم إلى مجتمع الذكاء الاصطناعي في جامعة النجاح"
+      formOpen={formOpen}
+      formRef={formRef}
+      onStartRegistration={() => setFormOpen(true)}
     >
       {done ? (
         <div className="success" role="status" aria-live="polite">
