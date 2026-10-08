@@ -31,9 +31,6 @@ export default function Field({ label, icon, error, type = 'text', ltr = false, 
             {visible ? <EyeOffIcon /> : <EyeIcon />}
           </button>
         )}
-        <span className="field__scan-line" aria-hidden="true" />
-        <span className="field__active-indicator" aria-hidden="true" />
-        <span className="field__data-bar" aria-hidden="true" />
       </div>
       {error && <p id={errorId} className="field__error" role="alert">{error}</p>}
     </div>
