@@ -1,5 +1,6 @@
 import logo from '../assets/nai-logo.png'
 import GooeyTextReveal from './ui/gooey-text-reveal'
+import AnimatedJoinButton from './AnimatedJoinButton'
 
 // Shared layout for both pages: brand panel next to a white card
 export default function AuthShell({ variant, title, subtitle, children, formOpen = true, formRef, onStartRegistration }) {
@@ -55,18 +56,7 @@ export default function AuthShell({ variant, title, subtitle, children, formOpen
             <p className="brand__text" data-gooey-reveal-item>{subtitle}</p>
           </GooeyTextReveal>
           {variant === 'student' && (
-            <button
-              className="brand__cta"
-              type="button"
-              onClick={onStartRegistration}
-              aria-controls="membership-form"
-              aria-expanded={formOpen}
-            >
-              <span>انتسب الآن</span>
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="m7 9 5 5 5-5M7 14l5 5 5-5" />
-              </svg>
-            </button>
+            <AnimatedJoinButton onComplete={onStartRegistration} expanded={formOpen} />
           )}
           <p className="brand__tagline">
             <span>طلابنا</span><i /><span>أفكارنا</span><i /><span>مجتمعنا</span><i /><span>لمستقبل أذكى</span>
