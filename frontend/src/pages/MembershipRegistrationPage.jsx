@@ -2,11 +2,11 @@ import { useState } from 'react'
 import AuthShell from '../components/AuthShell'
 import Field from '../components/Field'
 import Alert from '../components/Alert'
-import { CheckIcon, IdIcon, UserIcon } from '../components/Icons'
+import { CheckIcon, GraduationIcon, IdIcon, PhoneIcon, UserIcon } from '../components/Icons'
 import { registerStudent, mapBackendErrors } from '../api/registrationApi'
 import { translateBackendMessage, validateRegistration } from '../utils/validation'
 
-const EMPTY = { full_name: '', university_id: '' }
+const EMPTY = { full_name: '', major: '', university_id: '', whatsapp: '' }
 
 export default function MembershipRegistrationPage() {
   const [values, setValues] = useState(EMPTY)
@@ -72,15 +72,19 @@ export default function MembershipRegistrationPage() {
         <>
           <div className="card__icon"><UserIcon /></div>
           <h2 id="card-title" className="card__title">انتسب إلى الجمعية</h2>
-          <p className="card__subtitle">عبّي بياناتك عشان نرسل طلب انتسابك للجمعية</p>
+          <p className="card__subtitle">أدخل بياناتك عشان نكمل طلب انتسابك</p>
 
           <form onSubmit={handleSubmit} noValidate>
             {formError && <Alert>{formError}</Alert>}
 
             <Field label="الاسم الكامل" icon={<UserIcon />} name="full_name" value={values.full_name}
               onChange={handleChange} error={errors.full_name} hint="اكتب اسمك زي ما هو مسجل بالجامعة" placeholder="مثال: محمد أحمد" autoComplete="name" />
+            <Field label="التخصص" icon={<GraduationIcon />} name="major" value={values.major}
+              onChange={handleChange} error={errors.major} hint="مثال: هندسة الحاسوب" placeholder="اكتب تخصصك" autoComplete="organization-title" />
             <Field label="الرقم الجامعي" icon={<IdIcon />} name="university_id" value={values.university_id}
               onChange={handleChange} error={errors.university_id} hint="تأكد من الرقم الموجود على بطاقتك الجامعية" placeholder="مثال: 12001234" ltr inputMode="numeric" autoComplete="off" />
+            <Field label="رقم الواتساب" icon={<PhoneIcon />} name="whatsapp" type="tel" value={values.whatsapp}
+              onChange={handleChange} error={errors.whatsapp} hint="عشان نقدر نتواصل معك بخصوص الانتساب" placeholder="مثال: 0591234567" ltr inputMode="tel" autoComplete="tel" />
 
             <p className="form-note">
               <span className="form-note__dot" aria-hidden="true" />
