@@ -249,7 +249,7 @@ button, input { font: inherit; }
   padding: 42px 38px 36px;
   box-shadow: 0 28px 90px rgba(8, 4, 38, .48), 0 0 42px rgba(196, 143, 255, .22);
   backdrop-filter: blur(14px);
-  animation: card-in .8s cubic-bezier(.2,.75,.3,1) both;
+  animation: card-in .48s cubic-bezier(.2,.75,.3,1) both;
 }
 
 @keyframes card-in { from { opacity: 0; transform: translateY(20px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
@@ -519,6 +519,25 @@ button, input { font: inherit; }
 }
 .success__status-dot { margin-top: 0; background: #9a6ade; }
 
+.mobile-back {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin: 0 0 14px auto;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: #f5f1fc;
+  color: #624d83;
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mobile-back svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mobile-back:focus-visible { outline: 2px solid var(--purple-500); outline-offset: 2px; }
+
 /* Mobile */
 @media (max-width: 860px) {
   .shell { align-items: flex-start; padding: 24px 16px; }
@@ -555,6 +574,7 @@ button, input { font: inherit; }
     justify-content: center;
     padding: 8px 0 20px;
   }
+  .brand--hidden-mobile { display: none; }
   .brand__logo {
     margin-bottom: 8px;
     padding: 0;
@@ -570,6 +590,7 @@ button, input { font: inherit; }
   .brand__subtitle { margin-bottom: 0; font-size: 1.02rem; }
   .brand__text { display: block; max-width: 290px; margin: 8px auto 0; font-size: .95rem; line-height: 1.7; }
   .join-button { display: block; }
+  .mobile-back { display: flex; }
 
   .card--mobile-hidden { display: none; }
 
