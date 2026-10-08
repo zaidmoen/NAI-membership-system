@@ -14,13 +14,6 @@ export function validateRegistration(values) {
   return errors
 }
 
-export function validateLogin(values) {
-  const errors = {}
-  if (!values.identifier.trim()) errors.identifier = REQUIRED
-  if (!values.password) errors.password = REQUIRED
-  return errors
-}
-
 // Backend messages are in English, so show Arabic text for the ones we know about
 export function translateBackendMessage(message) {
   const text = String(message).toLowerCase()

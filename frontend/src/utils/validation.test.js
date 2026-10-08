@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { validateLogin, validateRegistration, translateBackendMessage } from './validation'
+import { validateRegistration, translateBackendMessage } from './validation'
 import { buildRegistrationPayload, mapBackendErrors } from '../api/registrationApi'
 
 const valid = { full_name: 'سارة أحمد', university_id: '12001234' }
@@ -12,12 +12,6 @@ describe('validateRegistration', () => {
   it('requires the full name and university ID', () => {
     const errors = validateRegistration({ full_name: '  ', university_id: '' })
     expect(Object.keys(errors).sort()).toEqual(['full_name', 'university_id'])
-  })
-})
-
-describe('validateLogin', () => {
-  it('requires both fields', () => {
-    expect(Object.keys(validateLogin({ identifier: '', password: '' }))).toEqual(['identifier', 'password'])
   })
 })
 
