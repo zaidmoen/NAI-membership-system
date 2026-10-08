@@ -2,24 +2,41 @@ import { describe, expect, it } from 'vitest'
 import { validateRegistration, translateBackendMessage } from './validation'
 import { buildRegistrationPayload, mapBackendErrors } from '../api/registrationApi'
 
-const valid = { full_name: 'سارة أحمد', university_id: '12001234' }
+const valid = {
+  full_name: 'سارة أحمد',
+  major: 'علم الحاسوب',
+  university_id: '12001234',
+  whatsapp: '+970 59 123 4567',
+}
 
 describe('validateRegistration', () => {
   it('accepts valid values', () => {
     expect(validateRegistration(valid)).toEqual({})
   })
 
-  it('requires the full name and university ID', () => {
-    const errors = validateRegistration({ full_name: '  ', university_id: '' })
-    expect(Object.keys(errors).sort()).toEqual(['full_name', 'university_id'])
+  it('requires all membership fields', () => {
+    const errors = validateRegistration({
+      full_name: '  ',
+      major: '',
+      university_id: '',
+      whatsapp: ' ',
+    })
+
+    expect(Object.keys(errors).sort()).toEqual(['full_name', 'major', 'university_id', 'whatsapp'])
+  })
+
+  it('rejects an invalid WhatsApp number', () => {
+    expect(validateRegistration({ ...valid, whatsapp: 'abc' }).whatsapp).toBeTruthy()
   })
 })
 
 describe('registration API mapping', () => {
-  it('sends only the fields the backend supports today', () => {
-    expect(buildRegistrationPayload({ ...valid, full_name: '  سارة ', major: 'ignored', whatsapp: 'ignored' })).toEqual({
+  it('sends the same fields that the backend accepts', () => {
+    expect(buildRegistrationPayload({ ...valid, full_name: '  سارة ', major: ' علم الحاسوب ' })).toEqual({
       full_name: 'سارة',
+      major: 'علم الحاسوب',
       university_id: '12001234',
+      whatsapp: '+970 59 123 4567',
     })
   })
 

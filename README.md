@@ -11,7 +11,7 @@ A membership registration and payment tracking system for the Najah AI Society
 
 The backend supports student registration, protected student search and filtering, payment confirmation, and membership summary counts
 
-The React frontend provides the public membership form. Students submit only their full name and university ID. Administrator sign-in currently uses Django's built-in admin page; a custom React admin dashboard can be added in a later phase
+The React frontend provides the public membership form. Students submit their full name, major, university ID, and WhatsApp number. Administrator sign-in currently uses Django's built-in admin page; a custom React admin dashboard can be added in a later phase
 
 The local development setup uses SQLite until the team confirms the database for the full system
 
@@ -58,7 +58,7 @@ Vite serves the frontend at `http://localhost:5173` and proxies `/api`, `/admin`
 
 | Method | Endpoint | Access | Purpose |
 | --- | --- | --- | --- |
-| POST | `/api/students/register/` | Public | Submit a student's full name and university ID |
+| POST | `/api/students/register/` | Public | Submit a student's name, major, university ID, and WhatsApp number |
 | GET | `/api/students/` | Staff admin | List students, search, or filter by status |
 | GET | `/api/students/summary/` | Staff admin | Get total, pending, and active member counts |
 | POST | `/api/students/<id>/confirm-payment/` | Staff admin | Confirm an in-person payment |

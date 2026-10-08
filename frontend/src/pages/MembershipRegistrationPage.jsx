@@ -2,11 +2,11 @@ import { useState } from 'react'
 import AuthShell from '../components/AuthShell'
 import Field from '../components/Field'
 import Alert from '../components/Alert'
-import { CheckIcon, IdIcon, UserIcon } from '../components/Icons'
+import { BookIcon, CheckIcon, IdIcon, PhoneIcon, UserIcon } from '../components/Icons'
 import { registerStudent, mapBackendErrors } from '../api/registrationApi'
 import { translateBackendMessage, validateRegistration } from '../utils/validation'
 
-const EMPTY = { full_name: '', university_id: '' }
+const EMPTY = { full_name: '', major: '', university_id: '', whatsapp: '' }
 
 export default function MembershipRegistrationPage() {
   const [values, setValues] = useState(EMPTY)
@@ -75,8 +75,12 @@ export default function MembershipRegistrationPage() {
 
             <Field label="الاسم الكامل" icon={<UserIcon />} name="full_name" value={values.full_name}
               onChange={handleChange} error={errors.full_name} placeholder="الاسم الكامل" autoComplete="name" />
+            <Field label="التخصص" icon={<BookIcon />} name="major" value={values.major}
+              onChange={handleChange} error={errors.major} placeholder="مثال: علم الحاسوب" autoComplete="organization-title" />
             <Field label="الرقم الجامعي" icon={<IdIcon />} name="university_id" value={values.university_id}
               onChange={handleChange} error={errors.university_id} placeholder="مثال: 12001234" ltr inputMode="numeric" autoComplete="off" />
+            <Field label="رقم الواتساب" icon={<PhoneIcon />} name="whatsapp" type="tel" value={values.whatsapp}
+              onChange={handleChange} error={errors.whatsapp} placeholder="مثال: +970 59 123 4567" ltr autoComplete="tel" />
 
             <button className="btn btn--primary" type="submit" disabled={loading}>
               {loading ? 'جارٍ الإرسال...' : 'انتسب الآن'}

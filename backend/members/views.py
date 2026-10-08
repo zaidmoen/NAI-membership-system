@@ -55,6 +55,7 @@ class StudentListView(APIView):
             students = students.filter(
                 Q(full_name__icontains=search_text)
                 | Q(university_id__icontains=search_text)
+                | Q(whatsapp__icontains=search_text)
             )
 
         allowed_statuses = [value for value, _label in Student.Status.choices]
