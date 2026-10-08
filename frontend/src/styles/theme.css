@@ -168,75 +168,51 @@ button, input { font: inherit; }
   display: none;
   position: relative;
   width: min(250px, 78vw);
-  height: 68px;
+  height: 58px;
   margin: 24px auto 0;
-  padding: 0;
-  border: 0;
-  border-radius: 18px;
-  background: transparent;
+  overflow: visible;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-image: linear-gradient(#211847, #211847), linear-gradient(135deg, #e6d8ff, #9b72ef 55%, #d9c7ff);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  background-size: 250% 250%;
   font-family: inherit;
   cursor: pointer;
   color: #fff;
-  filter: drop-shadow(0 8px 16px rgba(19, 8, 66, .24));
-  transition: transform .22s cubic-bezier(.2,.8,.2,1), filter .22s ease;
+  box-shadow: 0 8px 24px rgba(18, 7, 54, .25);
+  animation: join-gradient 8s ease infinite;
+  transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease;
 }
-.join-button:hover:not(:disabled) { transform: translateY(-2px); filter: drop-shadow(0 12px 20px rgba(19, 8, 66, .3)); }
+.join-button:hover:not(:disabled) { transform: translateY(-2px) scale(1.025); box-shadow: 0 12px 30px rgba(18, 7, 54, .34), 0 0 24px rgba(159, 111, 255, .24); }
 .join-button:active:not(:disabled) { transform: translateY(0) scale(.985); }
 .join-button:focus-visible { outline: 3px solid #fff; outline-offset: 5px; }
 .join-button:disabled { cursor: default; }
-.join-button__base,
-.join-button__frame,
-.join-button__content { position: absolute; inset: 0; border-radius: inherit; }
-.join-button__base {
-  top: 3px;
-  background: #4d2aa7;
-  box-shadow: 0 5px 12px rgba(33, 14, 91, .22);
-  transition: top .22s ease, box-shadow .22s ease;
-}
-.join-button:hover:not(:disabled) .join-button__base { top: 5px; }
-.join-button__frame { padding: 2px; overflow: hidden; background: linear-gradient(145deg, #e7d8ff, #b38aff 48%, #754ae0); }
-.join-button__content {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 13px;
-  overflow: hidden;
-  background: linear-gradient(135deg, #8556e8, #7040d0 58%, #6233bd);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.3), inset 0 -3px 8px rgba(38,12,100,.2);
-  font-size: 1.05rem;
-  font-weight: 800;
-  text-shadow: 0 1px 4px rgba(42, 12, 100, .45);
-}
-.join-button__content::before { position: absolute; top: -40%; bottom: -40%; left: -32%; width: 26%; content: ''; background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent); opacity: 0; transform: skewX(-18deg); pointer-events: none; }
-.join-button__labels { position: relative; display: grid; min-width: 144px; min-height: 28px; place-items: center; }
-.join-button__label { grid-area: 1 / 1; white-space: nowrap; transition: transform .28s cubic-bezier(.2,.8,.2,1), opacity .24s ease, filter .24s ease; }
-.join-button__label--loading { transform: translateY(12px); opacity: 0; filter: blur(3px); }
-.join-button__arrow { width: 23px; height: 23px; flex: 0 0 23px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.join-button__outline { position: absolute; inset: 0; z-index: 2; overflow: hidden; border-radius: inherit; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
-.join-button__outline::before { position: absolute; inset: -70px auto auto 50%; width: 70px; height: 190px; content: ''; background: linear-gradient(90deg, transparent, rgba(255,255,255,.8), transparent); transform: translateX(-170px) rotate(24deg); }
-.join-button__path { position: absolute; inset: 0; z-index: 3; width: 100%; height: 100%; overflow: visible; stroke: #f5e9ff; stroke-width: 2; stroke-dasharray: 150 480; stroke-dashoffset: 150; pointer-events: none; }
-.join-button__arrow path { transform-box: fill-box; transform-origin: center; }
-.join-button__splash { position: absolute; z-index: 4; top: -2px; right: 3px; width: 44px; height: 32px; overflow: visible; stroke: #f1e7ff; stroke-width: 1.8; stroke-linecap: round; stroke-dasharray: 18 140; stroke-dashoffset: 18; opacity: 0; pointer-events: none; }
-.join-button--animating .join-button__base { top: 2px; box-shadow: 0 2px 7px rgba(33, 14, 91, .2); }
-.join-button--animating .join-button__path { animation: join-outline-draw .78s cubic-bezier(.2,.7,.2,1) forwards .08s; }
-.join-button--animating .join-button__outline { opacity: .75; }
-.join-button--animating .join-button__outline::before { animation: join-outline-sweep .72s cubic-bezier(.2,.7,.2,1) forwards; }
-.join-button--animating .join-button__content::before { animation: join-sheen .65s ease-out forwards; }
-.join-button--animating .join-button__label--initial { transform: translateY(-12px); opacity: 0; filter: blur(3px); }
-.join-button--animating .join-button__label--loading { transform: translateY(0); opacity: 1; filter: blur(0); transition-delay: .12s; }
-.join-button--animating .join-button__arrow { animation: join-arrow-flight .72s cubic-bezier(.2,.7,.2,1) forwards; }
-.join-button--animating .join-button__splash { animation: join-splash .42s ease-out forwards .04s; }
-@keyframes join-outline-sweep { to { transform: translateX(170px) rotate(24deg); } }
-@keyframes join-outline-draw { to { stroke-dashoffset: -480; stroke: #fff; } }
-@keyframes join-sheen { 15% { opacity: 1; } 100% { transform: translateX(560%) skewX(-18deg); opacity: 0; } }
-@keyframes join-arrow-flight {
-  0% { transform: translateX(0); opacity: 1; }
-  38% { transform: translateX(14px); opacity: 0; }
-  39% { transform: translateX(-16px); opacity: 0; }
-  100% { transform: translateX(0); opacity: 1; }
-}
-@keyframes join-splash { 20% { opacity: .7; } 100% { stroke-dashoffset: -110; opacity: 0; transform: scale(1.08); } }
+.join-button__stars,
+.join-button__glow,
+.join-button__activation { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+.join-button__stars { inset: 2px; overflow: hidden; background: #211847; }
+.join-button__stars::before,
+.join-button__stars::after { position: absolute; inset: -70%; content: ''; background-image: radial-gradient(rgba(255,255,255,.82) .8px, transparent 1.3px); background-size: 31px 31px; opacity: .28; }
+.join-button__stars::before { animation: join-stars-drift 28s linear infinite; }
+.join-button__stars::after { background-size: 47px 47px; opacity: .17; animation: join-stars-drift 42s linear infinite reverse; }
+.join-button__stars span { position: absolute; inset: 0; background: linear-gradient(100deg, transparent 18%, rgba(255,255,255,.08) 48%, transparent 72%); opacity: .55; }
+.join-button__glow { inset: 2px; display: flex; align-items: center; padding: 0 12%; overflow: hidden; opacity: .62; }
+.join-button__glow-circle { flex: 1; height: 23px; border-radius: 50%; filter: blur(18px); animation: join-glow-pulse 4s ease-in-out infinite; }
+.join-button__glow-circle:first-child { background: rgba(181, 125, 255, .72); }
+.join-button__glow-circle:last-child { background: rgba(106, 77, 224, .76); animation-delay: 1.2s; }
+.join-button__labels { position: relative; z-index: 2; display: grid; min-height: 26px; place-items: center; font-size: 1rem; letter-spacing: .02em; text-shadow: 0 0 10px rgba(230,216,255,.3); }
+.join-button__label { grid-area: 1 / 1; white-space: nowrap; transition: transform .24s cubic-bezier(.2,.8,.2,1), opacity .22s ease; }
+.join-button__label--loading { transform: translateY(8px); opacity: 0; }
+.join-button__activation { z-index: 3; inset: -2px; border: 1px solid rgba(255,255,255,.9); opacity: 0; transform: scale(.96); }
+.join-button--animating { animation-play-state: paused; }
+.join-button--animating .join-button__label--initial { transform: translateY(-8px); opacity: 0; }
+.join-button--animating .join-button__label--loading { transform: translateY(0); opacity: 1; transition-delay: .08s; }
+.join-button--animating .join-button__activation { animation: join-button-activation .62s cubic-bezier(.2,.7,.2,1) forwards; }
+@keyframes join-gradient { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+@keyframes join-stars-drift { from { transform: translateY(0); } to { transform: translateY(-90px); } }
+@keyframes join-glow-pulse { 0%, 100% { transform: scale(.78); opacity: .62; } 50% { transform: scale(1); opacity: 1; } }
+@keyframes join-button-activation { 15% { opacity: .9; transform: scale(1); box-shadow: 0 0 22px rgba(209,181,255,.5); } 100% { opacity: 0; transform: scale(1.08); box-shadow: 0 0 34px rgba(209,181,255,0); } }
 
 /* White card */
 .card {
