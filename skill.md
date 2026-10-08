@@ -9,7 +9,7 @@ Use these rules whenever an AI agent helps with this repository
 - The frontend uses React
 - Read `docs/requirements.md` before changing system behavior
 - Keep the MVP focused on student registration and in-person membership payment tracking
-- Students register with their full name and university ID only
+- Students register with their full name, major, university ID, and WhatsApp number
 - Students do not have login accounts in the MVP
 - Administrators sign in to manage student records and confirm payments
 
