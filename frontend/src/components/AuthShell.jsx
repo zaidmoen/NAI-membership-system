@@ -14,7 +14,7 @@ export default function AuthShell({ variant, title, subtitle, children }) {
 
         <aside className="brand">
           <div className="brand__logo">
-            <img src={logo} alt="شعار جمعية عين NAI - Najah AI Society" />
+            <img src={logo} alt="شعار جمعية النجاح للذكاء الاصطناعي NAI" />
           </div>
           <h1 className="brand__title">جمعية النجاح للذكاء الاصطناعي</h1>
           <p className="brand__subtitle">{title}</p>
