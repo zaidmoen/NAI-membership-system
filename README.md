@@ -9,7 +9,7 @@ A membership registration and payment tracking system for the Najah AI Society
 
 ## Current status
 
-The Django backend starter is in place with a health-check endpoint. Student registration and administrator features will be added in later tasks
+The backend supports student registration, protected student search and filtering, payment confirmation, and membership summary counts
 
 The local development setup uses SQLite until the team confirms the database for the full system
 
@@ -28,14 +28,31 @@ Install the backend requirements
 pip install -r backend/requirements.txt
 ```
 
-Move into the backend folder, prepare the local database, run the tests, and start Django
+Move into the backend folder and prepare the local database
 
 ```powershell
 cd backend
 python manage.py migrate
+python manage.py createsuperuser
 python manage.py test
 python manage.py runserver
 ```
+
+The Django admin page is available at `http://127.0.0.1:8000/admin/`
+
+## API endpoints
+
+| Method | Endpoint | Access | Purpose |
+| --- | --- | --- | --- |
+| POST | `/api/students/register/` | Public | Submit a student's full name and university ID |
+| GET | `/api/students/` | Staff admin | List students, search, or filter by status |
+| GET | `/api/students/summary/` | Staff admin | Get total, pending, and active member counts |
+| POST | `/api/students/<id>/confirm-payment/` | Staff admin | Confirm an in-person payment |
+| GET | `/api/health/` | Public | Check that the API is running |
+
+Use `?search=` to search a student by name or university ID. Use `?status=pending_payment` or `?status=active_member` to filter the list
+
+Administrator API requests use a Django session from an authenticated staff account. Student registration does not require an account
 
 The health endpoint is available at `http://127.0.0.1:8000/api/health/`
 
