@@ -9,11 +9,11 @@ A membership registration and payment tracking system for the Najah AI Society
 
 ## Current status
 
-The backend supports student registration, protected student search and filtering, payment confirmation, and membership summary counts
+The backend supports public student registration, protected student search and filtering, payment confirmation, and membership summary counts
 
-The React frontend provides the public membership form. Students submit their full name, major, university ID, and WhatsApp number. Administrator sign-in currently uses Django's built-in admin page; a custom React admin dashboard can be added in a later phase
+The React frontend includes a public membership form and an administrator dashboard at `/manage`. Students submit their full name, major, university ID, and WhatsApp number. Administrators sign in with a Django staff account before they can view records or confirm payments
 
-The local development setup uses SQLite until the team confirms the database for the full system
+The local development setup uses SQLite. The team can choose another database before deployment
 
 ## Run the backend locally
 
@@ -40,7 +40,7 @@ python manage.py test
 python manage.py runserver
 ```
 
-The Django admin page is available at `http://127.0.0.1:8000/admin/`
+The Django admin sign-in page is available at `http://127.0.0.1:8000/admin/`. The React dashboard is available at `http://localhost:5173/manage` after starting the frontend. Use the same staff account for both
 
 ## Run the frontend locally
 
@@ -58,7 +58,7 @@ Vite serves the frontend at `http://localhost:5173` and proxies `/api`, `/admin`
 
 | Method | Endpoint | Access | Purpose |
 | --- | --- | --- | --- |
-| POST | `/api/students/register/` | Public | Submit a student's name, major, university ID, and WhatsApp number |
+| POST | `/api/students/register/` | Public | Submit a student's full name, major, university ID, and WhatsApp number |
 | GET | `/api/students/` | Staff admin | List students, search, or filter by status |
 | GET | `/api/students/summary/` | Staff admin | Get total, pending, and active member counts |
 | POST | `/api/students/<id>/confirm-payment/` | Staff admin | Confirm an in-person payment |
