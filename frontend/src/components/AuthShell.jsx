@@ -29,7 +29,12 @@ export default function AuthShell({ variant, title, subtitle, children }) {
       </div>
 
       <main className="shell__inner">
-        <section className="card" aria-labelledby="card-title">
+        <section
+          className="card"
+          id={variant === 'student' ? 'membership-form' : undefined}
+          tabIndex={variant === 'student' ? -1 : undefined}
+          aria-labelledby="card-title"
+        >
           {children}
         </section>
 
@@ -48,6 +53,14 @@ export default function AuthShell({ variant, title, subtitle, children }) {
             <p className="brand__subtitle" data-gooey-reveal-item>{title}</p>
             <p className="brand__text" data-gooey-reveal-item>{subtitle}</p>
           </GooeyTextReveal>
+          {variant === 'student' && (
+            <a className="brand__cta" href="#membership-form">
+              <span>ابدأ الانتساب</span>
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="m7 9 5 5 5-5M7 14l5 5 5-5" />
+              </svg>
+            </a>
+          )}
           <p className="brand__tagline">
             <span>طلابنا</span><i /><span>أفكارنا</span><i /><span>مجتمعنا</span><i /><span>لمستقبل أذكى</span>
           </p>
