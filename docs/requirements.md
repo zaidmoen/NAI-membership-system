@@ -207,7 +207,7 @@ A payment reversal or correction workflow is not defined in this MVP. It must be
 ### Administrator payment confirmation
 
 1. The administrator signs in
-2. The administrator searches by name or university ID
+2. The administrator searches by name, university ID, or WhatsApp number
 3. The administrator checks the result against the student at the desk
 4. After receiving payment, the administrator confirms it
 5. The system records the administrator and confirmation time

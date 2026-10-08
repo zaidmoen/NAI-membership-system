@@ -64,7 +64,7 @@ Vite serves the frontend at `http://localhost:5173` and proxies `/api`, `/admin`
 | POST | `/api/students/<id>/confirm-payment/` | Staff admin | Confirm an in-person payment |
 | GET | `/api/health/` | Public | Check that the API is running |
 
-Use `?search=` to search a student by name or university ID. Use `?status=pending_payment` or `?status=active_member` to filter the list
+Use `?search=` to search a student by name, university ID, or WhatsApp number. Use `?status=pending_payment` or `?status=active_member` to filter the list
 
 Administrator API requests use a Django session from an authenticated staff account. Student registration does not require an account
 
