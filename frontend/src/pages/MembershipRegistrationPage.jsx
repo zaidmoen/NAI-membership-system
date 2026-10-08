@@ -2,11 +2,11 @@ import { useState } from 'react'
 import AuthShell from '../components/AuthShell'
 import Field from '../components/Field'
 import Alert from '../components/Alert'
-import { BookIcon, CheckIcon, IdIcon, PhoneIcon, UserIcon } from '../components/Icons'
+import { CheckIcon, IdIcon, UserIcon } from '../components/Icons'
 import { registerStudent, mapBackendErrors } from '../api/registrationApi'
 import { translateBackendMessage, validateRegistration } from '../utils/validation'
 
-const EMPTY = { full_name: '', major: '', university_id: '', whatsapp: '' }
+const EMPTY = { full_name: '', university_id: '' }
 
 export default function MembershipRegistrationPage() {
   const [values, setValues] = useState(EMPTY)
@@ -58,31 +58,36 @@ export default function MembershipRegistrationPage() {
       subtitle="انضم إلى مجتمع الذكاء الاصطناعي في جامعة النجاح"
     >
       {done ? (
-        <div className="success" role="status">
+        <div className="success" role="status" aria-live="polite">
           <div className="success__badge"><CheckIcon /></div>
           <h2 id="card-title" className="card__title">أهلًا وسهلًا فيك في جمعية ناي! 🎉</h2>
           <p className="success__text">تم استلام طلب انتسابك بنجاح.</p>
-          <p className="notice">ملاحظة: لتأكيد وتثبيت تسجيلك في الجمعية، يرجى دفع رسوم الانتساب.</p>
+          <div className="success__status">
+            <span className="success__status-dot" aria-hidden="true" />
+            <span>حالة طلبك: بانتظار الدفع</span>
+          </div>
+          <p className="notice">بعد دفع رسوم الانتساب عند طاولة الجمعية، الإدارة بتأكد عضويتك وبتصير عضو فعال. ما في داعي تعيد التسجيل.</p>
         </div>
       ) : (
         <>
           <div className="card__icon"><UserIcon /></div>
           <h2 id="card-title" className="card__title">انتسب إلى الجمعية</h2>
-          <p className="card__subtitle">أدخل بياناتك لتسجيل طلب الانتساب</p>
+          <p className="card__subtitle">عبّي بياناتك عشان نرسل طلب انتسابك للجمعية</p>
 
           <form onSubmit={handleSubmit} noValidate>
             {formError && <Alert>{formError}</Alert>}
 
             <Field label="الاسم الكامل" icon={<UserIcon />} name="full_name" value={values.full_name}
-              onChange={handleChange} error={errors.full_name} placeholder="الاسم الكامل" autoComplete="name" />
-            <Field label="التخصص" icon={<BookIcon />} name="major" value={values.major}
-              onChange={handleChange} error={errors.major} placeholder="مثال: علم الحاسوب" autoComplete="organization-title" />
+              onChange={handleChange} error={errors.full_name} hint="اكتب اسمك زي ما هو مسجل بالجامعة" placeholder="مثال: محمد أحمد" autoComplete="name" />
             <Field label="الرقم الجامعي" icon={<IdIcon />} name="university_id" value={values.university_id}
-              onChange={handleChange} error={errors.university_id} placeholder="مثال: 12001234" ltr inputMode="numeric" autoComplete="off" />
-            <Field label="رقم الواتساب" icon={<PhoneIcon />} name="whatsapp" type="tel" value={values.whatsapp}
-              onChange={handleChange} error={errors.whatsapp} placeholder="مثال: +970 59 123 4567" ltr autoComplete="tel" />
+              onChange={handleChange} error={errors.university_id} hint="تأكد من الرقم الموجود على بطاقتك الجامعية" placeholder="مثال: 12001234" ltr inputMode="numeric" autoComplete="off" />
 
-            <button className="btn btn--primary" type="submit" disabled={loading}>
+            <p className="form-note">
+              <span className="form-note__dot" aria-hidden="true" />
+              طلبك بضل بانتظار الدفع، والإدارة بتأكد انتسابك بعد ما تدفع عند الطاولة
+            </p>
+
+            <button className="btn btn--primary" type="submit" disabled={loading} aria-busy={loading}>
               {loading ? 'جارٍ الإرسال...' : 'انتسب الآن'}
             </button>
           </form>
