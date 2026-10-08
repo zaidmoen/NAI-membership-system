@@ -365,6 +365,42 @@ button, input { font: inherit; }
   .card { padding: 28px 20px 24px; }
 }
 
+@media (max-width: 600px) {
+  .shell {
+    min-height: 100svh;
+    padding: max(20px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+    background-position: 22% center;
+  }
+
+  .shell::before { opacity: .32; }
+  .shell__network { opacity: .38; }
+  .shell__inner { gap: 18px; }
+
+  .brand { width: 100%; }
+  .brand__logo {
+    margin-bottom: 8px;
+    padding: 4px 8px;
+  }
+  .brand__logo img { width: min(205px, 56vw); }
+  .brand__title { margin-bottom: 4px; font-size: 1.3rem; }
+  .brand__subtitle { margin-bottom: 0; font-size: 1.02rem; }
+
+  .card {
+    max-width: 500px;
+    padding: 26px 18px 22px;
+    border-radius: 22px;
+    box-shadow: 0 18px 52px rgba(8, 4, 38, .4), 0 0 28px rgba(196, 143, 255, .18);
+  }
+  .card__icon { width: 52px; height: 52px; margin-bottom: 12px; border-radius: 14px; }
+  .card__icon svg { width: 24px; height: 24px; }
+  .card__title { font-size: 1.45rem; }
+  .card__subtitle { margin: 5px 0 20px; font-size: .96rem; }
+
+  .field { margin-bottom: 16px; }
+  .field__control { height: 58px; }
+  .btn { min-height: 54px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
