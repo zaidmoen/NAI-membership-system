@@ -12,10 +12,15 @@ env/
 db.sqlite3
 staticfiles/
 
+# Node
+node_modules/
+frontend/dist/
+
 # Local environment files
 .env
 .env.*
 !.env.example
+frontend/.env
 
 # Editor files
 .vscode/

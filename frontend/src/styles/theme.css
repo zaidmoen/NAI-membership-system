@@ -1,0 +1,291 @@
+:root {
+  --purple-900: #1b1048;
+  --purple-800: #5a2bdc;
+  --purple-600: #7440f2;
+  --purple-500: #8556ff;
+  --purple-100: #ece6ff;
+  --blue-500: #4b6bff;
+  --ink: #1d1740;
+  --muted: #6b6892;
+  --line: #ddd8f3;
+  --danger: #c62d4c;
+  --danger-bg: #fdecef;
+  --ok: #1f8a5b;
+  --ok-bg: #e8f7f0;
+  --radius: 20px;
+  --font: 'Tajawal', 'Segoe UI', Tahoma, system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { min-height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--purple-900);
+}
+
+button, input { font: inherit; }
+
+/* Page background: university photo under a soft light purple overlay */
+.shell {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  background-color: #5a3bd6;
+  background-image:
+    linear-gradient(180deg, rgba(92, 56, 220, 0.62) 0%, rgba(132, 96, 245, 0.42) 55%, rgba(160, 128, 255, 0.34) 100%),
+    url('../assets/university-bg.jpg');
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+}
+
+.shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.7) 1px, transparent 1.5px);
+  background-size: 52px 52px;
+  mask-image: radial-gradient(circle at 30% 25%, #000, transparent 65%);
+  -webkit-mask-image: radial-gradient(circle at 30% 25%, #000, transparent 65%);
+}
+
+.shell__glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+}
+.shell__glow--one { width: 380px; height: 380px; top: -120px; left: -80px; background: rgba(120, 140, 255, 0.5); }
+.shell__glow--two { width: 420px; height: 420px; bottom: -160px; right: -100px; background: rgba(150, 100, 255, 0.45); }
+
+/* The admin page uses the same photo with a slightly deeper overlay */
+.shell--admin {
+  background-image:
+    linear-gradient(180deg, rgba(60, 34, 170, 0.72) 0%, rgba(98, 62, 215, 0.52) 55%, rgba(128, 94, 235, 0.42) 100%),
+    url('../assets/university-bg.jpg');
+}
+
+.shell__inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1040px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 56px;
+}
+
+/* Brand panel */
+.brand {
+  flex: 1;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(35, 15, 110, 0.7), 0 2px 18px rgba(40, 18, 120, 0.75);
+  /* Soft darker patch so the text stays readable on the light overlay */
+  background: radial-gradient(ellipse at center 60%, rgba(60, 30, 160, 0.45) 0%, transparent 68%);
+}
+
+.brand__logo {
+  display: inline-block;
+  margin-bottom: 24px;
+  padding: 6px 10px;
+  border-radius: 28px;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.55) 0%, rgba(235, 225, 255, 0.28) 55%, transparent 78%);
+}
+.brand__logo img {
+  display: block;
+  width: min(300px, 70vw);
+  height: auto;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 22px rgba(190, 160, 255, 0.85));
+}
+
+.brand__title { margin: 0 0 8px; font-size: 2rem; font-weight: 800; line-height: 1.35; }
+.brand__subtitle { margin: 0 0 6px; font-size: 1.35rem; font-weight: 700; color: #efe6ff; }
+.brand__text { margin: 0 0 18px; color: rgba(255, 255, 255, 0.78); }
+
+.brand__tagline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+.brand__tagline i { width: 1px; height: 14px; background: rgba(255, 255, 255, 0.35); }
+
+/* White card */
+.card {
+  width: 100%;
+  max-width: 440px;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 36px 32px 32px;
+  box-shadow: 0 24px 70px rgba(10, 4, 40, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+
+.card__icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 14px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--purple-100);
+  color: var(--purple-600);
+}
+.card__icon svg { width: 28px; height: 28px; }
+.card__icon--secure { background: #e6ebff; color: var(--blue-500); }
+
+.card__title { margin: 0; text-align: center; font-size: 1.7rem; font-weight: 800; }
+.card__subtitle { margin: 6px 0 22px; text-align: center; color: var(--muted); }
+
+/* Form fields */
+.field { margin-bottom: 16px; }
+.field__label { display: block; margin-bottom: 7px; font-weight: 700; font-size: 0.95rem; }
+
+.field__control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  height: 52px;
+  background: #f6f4ff;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  color: var(--purple-600);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field__control:focus-within {
+  border-color: var(--purple-500);
+  box-shadow: 0 0 0 4px rgba(124, 77, 255, 0.16);
+}
+.field__control--error { border-color: var(--danger); background: #fff8f9; }
+.field__control--error:focus-within { box-shadow: 0 0 0 4px rgba(198, 45, 76, 0.14); }
+
+.field__icon { display: flex; }
+
+.field__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1rem;
+}
+.field__input::placeholder { color: #9a97bb; }
+.field__input--ltr { direction: ltr; text-align: right; }
+.field__input--ltr::placeholder { direction: rtl; }
+
+.field__toggle {
+  display: flex;
+  padding: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 8px;
+}
+.field__toggle:hover { color: var(--purple-600); }
+.field__toggle:focus-visible { outline: 2px solid var(--purple-500); }
+
+.field__error { margin: 6px 2px 0; color: var(--danger); font-size: 0.85rem; }
+
+/* Buttons */
+.btn {
+  width: 100%;
+  height: 54px;
+  margin-top: 6px;
+  border: 0;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s, opacity 0.2s;
+}
+.btn--primary {
+  color: #fff;
+  background: linear-gradient(135deg, var(--purple-600), var(--purple-800));
+  box-shadow: 0 10px 28px rgba(116, 64, 242, 0.42);
+}
+.btn--primary:hover:not(:disabled) { box-shadow: 0 12px 34px rgba(116, 64, 242, 0.55); transform: translateY(-1px); }
+.btn:disabled { opacity: 0.65; cursor: not-allowed; }
+.btn:focus-visible { outline: 3px solid rgba(124, 77, 255, 0.5); outline-offset: 2px; }
+
+.admin-access {
+  margin: 20px 0 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.admin-access a { color: var(--purple-600); font-weight: 700; text-decoration: none; }
+.admin-access a:hover { text-decoration: underline; }
+.admin-access a:focus-visible { outline: 2px solid var(--purple-500); outline-offset: 3px; }
+
+/* Messages */
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+.alert svg { flex-shrink: 0; margin-top: 3px; }
+
+.notice {
+  margin: 18px 0 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #fff6e0;
+  border: 1px solid #f3d58a;
+  color: #7a5200;
+  font-weight: 500;
+  line-height: 1.7;
+}
+.notice--ok { background: var(--ok-bg); border-color: #a8e0c4; color: var(--ok); text-align: center; }
+
+.success { text-align: center; padding: 8px 0; }
+.success__badge {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(135deg, var(--purple-500), var(--blue-500));
+  box-shadow: 0 0 40px rgba(124, 77, 255, 0.5);
+}
+.success__text { margin: 10px 0 0; font-size: 1.1rem; color: var(--muted); }
+.success .notice { text-align: right; }
+
+/* Mobile */
+@media (max-width: 860px) {
+  .shell { align-items: flex-start; padding: 24px 16px; }
+  .shell__inner { flex-direction: column; gap: 28px; }
+  .brand { order: -1; }
+  .brand__title { font-size: 1.5rem; }
+  .brand__subtitle { font-size: 1.1rem; }
+  .brand__text, .brand__tagline { display: none; }
+  .brand__logo { margin-bottom: 14px; }
+  .card { padding: 28px 20px 24px; }
+}
