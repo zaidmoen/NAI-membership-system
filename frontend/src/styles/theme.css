@@ -197,6 +197,10 @@ button, input { font: inherit; }
 .join-button__stars::before { animation: join-stars-drift 28s linear infinite; }
 .join-button__stars::after { background-size: 47px 47px; opacity: .17; animation: join-stars-drift 42s linear infinite reverse; }
 .join-button__stars span { position: absolute; inset: 0; background: linear-gradient(100deg, transparent 18%, rgba(255,255,255,.08) 48%, transparent 72%); opacity: .55; }
+.join-button__currents { position: absolute; z-index: 1; inset: 2px; width: calc(100% - 4px); height: calc(100% - 4px); overflow: hidden; border-radius: inherit; opacity: .58; mix-blend-mode: screen; pointer-events: none; }
+.join-button__currents path { stroke-width: 1.6; stroke-linecap: round; stroke-dasharray: 8 17; filter: drop-shadow(0 0 3px rgba(204,182,255,.75)); }
+.join-button__currents path:first-of-type { animation: join-current-flow 2.8s linear infinite; }
+.join-button__currents path:last-of-type { stroke-width: 1.2; opacity: .72; stroke-dasharray: 5 20; animation: join-current-flow 3.6s linear infinite reverse; }
 .join-button__glow { inset: 2px; display: flex; align-items: center; padding: 0 12%; overflow: hidden; opacity: .62; }
 .join-button__glow-circle { flex: 1; height: 23px; border-radius: 50%; filter: blur(18px); animation: join-glow-pulse 4s ease-in-out infinite; }
 .join-button__glow-circle:first-child { background: rgba(181, 125, 255, .72); }
@@ -211,6 +215,7 @@ button, input { font: inherit; }
 .join-button--animating .join-button__activation { animation: join-button-activation .62s cubic-bezier(.2,.7,.2,1) forwards; }
 @keyframes join-gradient { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
 @keyframes join-stars-drift { from { transform: translateY(0); } to { transform: translateY(-90px); } }
+@keyframes join-current-flow { to { stroke-dashoffset: -100; } }
 @keyframes join-glow-pulse { 0%, 100% { transform: scale(.78); opacity: .62; } 50% { transform: scale(1); opacity: 1; } }
 @keyframes join-button-activation { 15% { opacity: .9; transform: scale(1); box-shadow: 0 0 22px rgba(209,181,255,.5); } 100% { opacity: 0; transform: scale(1.08); box-shadow: 0 0 34px rgba(209,181,255,0); } }
 
