@@ -1,6 +1,6 @@
 import { postJson } from './client'
 
-// Send the four fields that the Django endpoint accepts
+// Keep the public form payload aligned with the Django registration serializer
 export const REGISTER_ENDPOINT = '/api/students/register/'
 
 export function buildRegistrationPayload(values) {
@@ -16,11 +16,10 @@ export function buildRegistrationPayload(values) {
 export function mapBackendErrors(data) {
   const errors = {}
   if (!data || typeof data !== 'object') return errors
-
-  for (const field of ['full_name', 'major', 'university_id', 'whatsapp']) {
-    if (data[field]) errors[field] = [].concat(data[field]).join(' ')
-  }
-
+  if (data.full_name) errors.full_name = [].concat(data.full_name).join(' ')
+  if (data.major) errors.major = [].concat(data.major).join(' ')
+  if (data.university_id) errors.university_id = [].concat(data.university_id).join(' ')
+  if (data.whatsapp) errors.whatsapp = [].concat(data.whatsapp).join(' ')
   return errors
 }
 
