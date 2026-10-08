@@ -177,7 +177,8 @@ button, input { font: inherit; }
   background: rgba(255, 255, 255, .14);
   color: #fff;
   font-weight: 700;
-  text-decoration: none;
+  font-family: inherit;
+  cursor: pointer;
   box-shadow: 0 8px 28px rgba(10, 4, 42, .18), inset 0 1px 0 rgba(255, 255, 255, .14);
   backdrop-filter: blur(10px);
   transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease;
@@ -506,18 +507,21 @@ button, input { font: inherit; }
   }
   .brand__logo {
     margin-bottom: 8px;
-    padding: 8px 14px;
-    border: 1px solid rgba(255, 255, 255, .72);
-    border-radius: 18px;
-    background: rgba(255, 255, 255, .9);
-    box-shadow: 0 8px 24px rgba(12, 5, 48, .2);
-    backdrop-filter: blur(8px);
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, .72)) drop-shadow(0 0 26px rgba(190, 151, 255, .85));
+    animation: logo-float 4s ease-in-out infinite;
   }
-  .brand__logo img { width: min(230px, 62vw); }
+  .brand__logo img { width: min(250px, 66vw); }
   .brand__title { margin-bottom: 4px; font-size: 1.3rem; }
   .brand__subtitle { margin-bottom: 0; font-size: 1.02rem; }
   .brand__text { display: block; max-width: 290px; margin: 8px auto 0; font-size: .95rem; line-height: 1.7; }
   .brand__cta { display: inline-flex; }
+
+  .card--mobile-hidden { display: none; }
 
   .card {
     scroll-margin-top: 16px;
@@ -534,6 +538,11 @@ button, input { font: inherit; }
   .field { margin-bottom: 16px; }
   .field__control { height: 58px; }
   .btn { min-height: 54px; }
+}
+
+@keyframes logo-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-5px) scale(1.015); }
 }
 
 @media (prefers-reduced-motion: reduce) {
