@@ -121,7 +121,7 @@ export default function MembershipRegistrationPage() {
             </button>
           </form>
           <p className="admin-access">
-            مسؤول الجمعية؟ <a href="/admin/">الدخول إلى لوحة الإدارة</a>
+            مسؤول الجمعية؟ <a href="/admin/login/?next=/manage">الدخول إلى لوحة الإدارة</a>
           </p>
         </>
       )}
