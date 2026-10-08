@@ -31,6 +31,12 @@ export default function MembershipRegistrationPage() {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: undefined }))
   }
 
+  const handleBackToWelcome = () => {
+    setFormOpen(false)
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' })
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault()
     setFormError('')
@@ -83,6 +89,12 @@ export default function MembershipRegistrationPage() {
         </div>
       ) : (
         <>
+          {formOpen && (
+            <button className="mobile-back" type="button" onClick={handleBackToWelcome}>
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+              <span>رجوع</span>
+            </button>
+          )}
           <div className="card__icon"><UserIcon /></div>
           <h2 id="card-title" className="card__title">انتسب إلى الجمعية</h2>
           <p className="card__subtitle">أدخل بياناتك عشان نكمل طلب انتسابك</p>
