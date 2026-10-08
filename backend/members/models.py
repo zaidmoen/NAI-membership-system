@@ -21,7 +21,7 @@ class Student(models.Model):
     payment_confirmed_at = models.DateTimeField(null=True, blank=True)
     payment_confirmed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         null=True,
         blank=True,
         related_name="confirmed_memberships",

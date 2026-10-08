@@ -14,4 +14,17 @@ class StudentAdmin(admin.ModelAdmin):
     )
     list_filter = ("status",)
     search_fields = ("full_name", "university_id")
-    readonly_fields = ("registered_at", "payment_confirmed_at", "payment_confirmed_by")
+    readonly_fields = (
+        "full_name",
+        "university_id",
+        "status",
+        "registered_at",
+        "payment_confirmed_at",
+        "payment_confirmed_by",
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
