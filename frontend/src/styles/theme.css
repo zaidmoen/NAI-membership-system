@@ -208,11 +208,14 @@ button, input { font: inherit; }
 }
 
 .field__control {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 0 10px;
   height: 60px;
+  overflow: hidden;
+  isolation: isolate;
   background: #faf9fd;
   border: 1px solid #e7e2ef;
   border-radius: 13px;
@@ -228,10 +231,26 @@ button, input { font: inherit; }
   background: #fff;
   box-shadow: 0 0 0 3px rgba(116, 64, 242, 0.09);
 }
+.field__control::before {
+  position: absolute;
+  z-index: 0;
+  inset: -20% -8%;
+  content: '';
+  background: radial-gradient(ellipse at 100% 50%, rgba(144, 103, 232, .12), transparent 56%);
+  opacity: 0;
+  transition: opacity .28s ease;
+  pointer-events: none;
+}
+.field__control:focus-within::before { opacity: 1; }
+.field__control--error::before {
+  background: radial-gradient(ellipse at 100% 50%, rgba(198, 45, 76, .08), transparent 56%);
+}
 .field__control--error { border-color: var(--danger); background: #fff8f9; }
 .field__control--error:focus-within { box-shadow: 0 0 0 4px rgba(198, 45, 76, 0.14); }
 
 .field__icon {
+  position: relative;
+  z-index: 1;
   display: grid;
   flex: 0 0 38px;
   width: 38px;
@@ -240,11 +259,13 @@ button, input { font: inherit; }
   border-radius: 10px;
   background: #f0ecf8;
   color: #766397;
-  transition: background-color 0.18s ease, color 0.18s ease;
+  transition: background-color 0.22s ease, color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
 }
 .field__control:focus-within .field__icon {
   background: #eee7fc;
   color: var(--purple-600);
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 3px 10px rgba(116, 64, 242, .12);
 }
 .field__control--error .field__icon {
   background: #fdecef;
@@ -252,6 +273,8 @@ button, input { font: inherit; }
 }
 
 .field__input {
+  position: relative;
+  z-index: 1;
   flex: 1;
   min-width: 0;
   height: 100%;
@@ -267,6 +290,8 @@ button, input { font: inherit; }
 .field__input--ltr::placeholder { direction: rtl; }
 
 .field__toggle {
+  position: relative;
+  z-index: 1;
   display: flex;
   padding: 6px;
   border: 0;
@@ -277,6 +302,27 @@ button, input { font: inherit; }
 }
 .field__toggle:hover { color: var(--purple-600); }
 .field__toggle:focus-visible { outline: 2px solid var(--purple-500); }
+
+.field__focus-sweep {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 0;
+  width: 38%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #a17be9 35%, #e2d4ff 50%, #a17be9 65%, transparent);
+  opacity: 0;
+  transform: translateX(110%);
+  pointer-events: none;
+}
+.field__control:focus-within .field__focus-sweep { animation: field-focus-sweep .85s cubic-bezier(.25,.7,.35,1) both; }
+
+@keyframes field-focus-sweep {
+  0% { opacity: 0; transform: translateX(110%); }
+  18% { opacity: .9; }
+  82% { opacity: .9; }
+  100% { opacity: 0; transform: translateX(-280%); }
+}
 
 .field__error { margin: 6px 2px 0; color: var(--danger); font-size: 0.85rem; }
 
