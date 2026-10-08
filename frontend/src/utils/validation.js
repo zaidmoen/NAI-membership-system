@@ -2,10 +2,10 @@ const REQUIRED = 'هذا الحقل مطلوب'
 
 export function validateRegistration(values) {
   const errors = {}
-  const name = values.full_name.trim()
-  const major = values.major.trim()
-  const universityId = values.university_id.trim()
-  const whatsapp = values.whatsapp.trim()
+  const name = (values.full_name || '').trim()
+  const major = (values.major || '').trim()
+  const universityId = (values.university_id || '').trim()
+  const whatsapp = (values.whatsapp || '').trim()
 
   if (!name) errors.full_name = REQUIRED
   else if (name.length > 150) errors.full_name = 'الاسم طويل جدًا'
@@ -16,9 +16,13 @@ export function validateRegistration(values) {
   if (!universityId) errors.university_id = REQUIRED
   else if (universityId.length > 30) errors.university_id = 'الرقم الجامعي طويل جدًا'
 
-  const normalizedWhatsApp = whatsapp.replace(/[\s()-]/g, '')
   if (!whatsapp) errors.whatsapp = REQUIRED
-  else if (!/^\+?\d{7,15}$/.test(normalizedWhatsApp)) errors.whatsapp = 'أدخل رقم واتساب صحيحًا'
+  else {
+    const cleanedNumber = whatsapp.replace(/[\s()-]/g, '')
+    if (whatsapp.length > 25 || !/^\+?\d{7,15}$/.test(cleanedNumber)) {
+      errors.whatsapp = 'أدخل رقم واتساب صحيح'
+    }
+  }
 
   return errors
 }
@@ -27,7 +31,7 @@ export function validateRegistration(values) {
 export function translateBackendMessage(message) {
   const text = String(message).toLowerCase()
   if (text.includes('already registered')) return 'هذا الرقم الجامعي مسجل مسبقًا'
-  if (text.includes('whatsapp')) return 'أدخل رقم واتساب صحيحًا'
+  if (text.includes('valid whatsapp')) return 'أدخل رقم واتساب صحيح'
   if (text.includes('blank') || text.includes('required') || text.includes('enter the')) return REQUIRED
   if (text.includes('no more than')) return 'القيمة المدخلة طويلة جدًا'
   return 'تحقق من القيمة المدخلة'
