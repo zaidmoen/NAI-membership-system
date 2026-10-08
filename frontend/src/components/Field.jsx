@@ -31,6 +31,7 @@ export default function Field({ label, icon, error, type = 'text', ltr = false, 
             {visible ? <EyeOffIcon /> : <EyeIcon />}
           </button>
         )}
+        <span className="field__focus-sweep" aria-hidden="true" />
       </div>
       {error && <p id={errorId} className="field__error" role="alert">{error}</p>}
     </div>
