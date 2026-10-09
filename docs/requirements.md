@@ -272,7 +272,7 @@ These items are intentionally left open rather than assumed:
 2. What is the membership fee, and does the system need to record its amount or currency?
 3. Who creates administrator accounts, and how are forgotten credentials handled?
 4. Should an administrator be able to correct an accidental payment confirmation? If yes, should the correction require a reason and be recorded in an audit log?
-5. Which database engine and Django API approach will the team use?
+5. Database engine — Resolved 2026-10-09: Supabase-managed PostgreSQL is the shared database, with local SQLite retained as a fallback. Django REST Framework is the API layer
 
 ## 12. MVP Delivery Boundary
 
