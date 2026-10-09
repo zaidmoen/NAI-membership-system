@@ -1,3 +1,35 @@
+import os
+from pathlib import Path
+from urllib.parse import parse_qs, unquote, urlsplit
+
+from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = BASE_DIR.parent
+load_dotenv(PROJECT_ROOT / ".env")
+
+LOCAL_SECRET_KEY = "dev-only-not-for-production"
+
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", LOCAL_SECRET_KEY)
+DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() == "true"
+
+if not DEBUG and SECRET_KEY == LOCAL_SECRET_KEY:
+    raise ImproperlyConfigured("Set DJANGO_SECRET_KEY before running with DEBUG disabled")
+
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    if host.strip()
+]
+
+default_csrf_origins = "http://localhost:5173,http://127.0.0.1:5173" if DEBUG else ""
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", default_csrf_origins).split(",")
+    if origin.strip()
+]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -19,7 +51,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "nai_membership.urls"
