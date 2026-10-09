@@ -209,8 +209,8 @@ export default function AdminDashboardPage() {
       <section className="admin-main">
         <header className="admin-topbar">
           <div className="admin-topbar__title">
-            <span className="admin-eyebrow">بوابة الإدارة</span>
-            <h1>إدارة العضوية</h1>
+            <span className="admin-eyebrow">جمعية النجاح للذكاء الاصطناعي</span>
+            <h1>لوحة الإدارة</h1>
           </div>
           <div className="admin-topbar__actions">
             <a className="admin-topbar__public" href="/register">عرض صفحة الانتساب <Icon name="arrow" /></a>
@@ -221,8 +221,8 @@ export default function AdminDashboardPage() {
         <div className="admin-content">
           <div className="admin-welcome">
             <div>
-              <h2>أهلًا فيك 👋</h2>
-              <p>تابع طلبات الطلاب وسجّل الدفعات من مكان واحد</p>
+              <h2>نظرة عامة</h2>
+              <p>راجع طلبات الانتساب وتابع حالات الدفع من سجل الطلاب</p>
             </div>
             <span className={`admin-welcome__badge ${error ? 'admin-welcome__badge--offline' : ''}`}>
               <span /> {loading && !lastUpdated ? 'جارٍ الاتصال' : error ? 'تعذر الاتصال' : 'النظام متصل'}
