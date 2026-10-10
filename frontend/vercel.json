@@ -2,19 +2,19 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
-      "source": "^/api/(.*)$",
-      "destination": "https://nai-membership-system.onrender.com/api/$1"
+      "source": "/api/:path*",
+      "destination": "https://nai-membership-system.onrender.com/api/:path*"
     },
     {
-      "source": "^/admin/(.*)$",
-      "destination": "https://nai-membership-system.onrender.com/admin/$1"
+      "source": "/admin/:path*",
+      "destination": "https://nai-membership-system.onrender.com/admin/:path*"
     },
     {
-      "source": "^/static/(.*)$",
-      "destination": "https://nai-membership-system.onrender.com/static/$1"
+      "source": "/static/:path*",
+      "destination": "https://nai-membership-system.onrender.com/static/:path*"
     },
     {
-      "source": "^/(.*)$",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
