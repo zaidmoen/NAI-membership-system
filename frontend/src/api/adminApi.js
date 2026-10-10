@@ -30,16 +30,25 @@ async function request(url, options = {}) {
   if (!response.ok) {
     throw new Error(data?.detail || 'صار خطأ أثناء تحميل البيانات، حاول مرة ثانية')
   }
+  if (data === null) {
+    throw new Error('استجابة الـ API مش بصيغة JSON، تحقق من إعدادات الربط على Vercel')
+  }
 
   return data
 }
 
-export function getStudents({ search = '', status = '' } = {}) {
+export async function getStudents({ search = '', status = '' } = {}) {
   const params = new URLSearchParams()
   if (search.trim()) params.set('search', search.trim())
   if (status) params.set('status', status)
   const query = params.toString()
-  return request(`${STUDENTS_ENDPOINT}${query ? `?${query}` : ''}`)
+  const data = await request(`${STUDENTS_ENDPOINT}${query ? `?${query}` : ''}`)
+
+  if (!Array.isArray(data)) {
+    throw new Error('استجابة الطلاب مش قائمة، تحقق من إعدادات الربط بين Vercel وDjango')
+  }
+
+  return data
 }
 
 export function getMembershipSummary() {
