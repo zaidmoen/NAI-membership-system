@@ -11,18 +11,31 @@ PROJECT_ROOT = BASE_DIR.parent
 load_dotenv(PROJECT_ROOT / ".env")
 
 LOCAL_SECRET_KEY = "dev-only-not-for-production"
+IS_VERCEL = os.environ.get("VERCEL") == "1"
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", LOCAL_SECRET_KEY)
-DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() == "true"
+DEBUG = os.environ.get("DJANGO_DEBUG", "False" if IS_VERCEL else "True").lower() == "true"
 
 if not DEBUG and SECRET_KEY == LOCAL_SECRET_KEY:
     raise ImproperlyConfigured("Set DJANGO_SECRET_KEY before running with DEBUG disabled")
 
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
-    if host.strip()
+vercel_hosts = [
+    os.environ[key].removeprefix("https://").removeprefix("http://").split("/", 1)[0]
+    for key in ("VERCEL_URL", "VERCEL_BRANCH_URL")
+    if os.environ.get(key)
 ]
+
+ALLOWED_HOSTS = list(dict.fromkeys([
+    *[
+        host.strip()
+        for host in os.environ.get(
+            "DJANGO_ALLOWED_HOSTS",
+            "localhost,127.0.0.1,nai-membership-system.vercel.app",
+        ).split(",")
+        if host.strip()
+    ],
+    *vercel_hosts,
+]))
 
 default_csrf_origins = "http://localhost:5173,http://127.0.0.1:5173" if DEBUG else ""
 CSRF_TRUSTED_ORIGINS = [
@@ -109,7 +122,7 @@ def get_database_settings(database_url):
             "PASSWORD": unquote(parsed_url.password),
             "HOST": parsed_url.hostname,
             "PORT": port,
-            "CONN_MAX_AGE": int(os.environ.get("DB_CONN_MAX_AGE", "60")),
+            "CONN_MAX_AGE": int(os.environ.get("DB_CONN_MAX_AGE", "0" if IS_VERCEL else "60")),
             "CONN_HEALTH_CHECKS": True,
             "OPTIONS": {"sslmode": sslmode},
         }
@@ -136,6 +149,10 @@ TIME_ZONE = os.environ.get("DJANGO_TIME_ZONE", "Asia/Hebron")
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
