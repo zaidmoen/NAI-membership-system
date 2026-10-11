@@ -38,6 +38,7 @@ class StudentRegistrationTests(TestCase):
         self.assertEqual(student.whatsapp, "+970591234567")
         self.assertEqual(student.status, Student.Status.PENDING_PAYMENT)
         self.assertFalse(student.is_volunteer)
+        self.assertEqual(student.membership_fee, 20)
         self.assertEqual(response.data["status"], Student.Status.PENDING_PAYMENT)
 
     def test_existing_volunteer_can_register_with_their_committee(self):
@@ -51,6 +52,7 @@ class StudentRegistrationTests(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertTrue(student.is_volunteer)
         self.assertEqual(student.volunteer_committee, Student.Committee.TECHNICAL)
+        self.assertEqual(student.membership_fee, 10)
 
     def test_current_volunteer_must_choose_a_committee(self):
         response = self.client.post(
@@ -175,6 +177,21 @@ class AdminStudentApiTests(TestCase):
         self.assertEqual(student.full_name, "Lina K")
         self.assertTrue(student.is_volunteer)
         self.assertEqual(student.volunteer_committee, Student.Committee.TECHNICAL)
+        self.assertEqual(student.membership_fee, 10)
+
+    def test_editing_paid_member_does_not_change_recorded_fee(self):
+        student = self.create_student("Lina Khalil", "10001", status=Student.Status.ACTIVE_MEMBER)
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.patch(
+            reverse("student-detail", args=[student.id]),
+            {"is_volunteer": True, "volunteer_committee": Student.Committee.TECHNICAL},
+            format="json",
+        )
+
+        student.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(student.membership_fee, 20)
 
     def test_admin_can_delete_student_record(self):
         student = self.create_student("Lina Khalil", "10001")
@@ -278,6 +295,7 @@ class AdminStudentApiTests(TestCase):
         self.assertIn("text/csv", response["Content-Type"])
         self.assertIn("attachment; filename=\"nai-members.csv\"", response["Content-Disposition"])
         self.assertTrue(response.content.startswith(b"\xef\xbb\xbf"))
+        self.assertIn("رسوم الانتساب (شيكل)".encode(), response.content)
         self.assertIn("Omar Saleh".encode(), response.content)
         self.assertNotIn("Lina Khalil".encode(), response.content)
 

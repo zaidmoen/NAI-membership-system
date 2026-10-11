@@ -28,6 +28,7 @@ class Student(models.Model):
         blank=True,
         default="",
     )
+    membership_fee = models.PositiveSmallIntegerField(default=20)
     status = models.CharField(
         max_length=20,
         choices=Status.choices,

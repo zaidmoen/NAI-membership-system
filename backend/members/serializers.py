@@ -40,6 +40,11 @@ class StudentRegistrationSerializer(serializers.ModelSerializer):
 
         return attrs
 
+    def create(self, validated_data):
+        # Current volunteers pay 10 shekels, while regular membership is 20
+        validated_data["membership_fee"] = 10 if validated_data["is_volunteer"] else 20
+        return super().create(validated_data)
+
     def validate_full_name(self, value):
         cleaned_name = " ".join(value.split())
 
@@ -82,6 +87,7 @@ class AdminStudentSerializer(serializers.ModelSerializer):
             "whatsapp",
             "is_volunteer",
             "volunteer_committee",
+            "membership_fee",
             "status",
             "registered_at",
             "payment_confirmed_at",
@@ -143,6 +149,12 @@ class AdminStudentUpdateSerializer(serializers.ModelSerializer):
             attrs["volunteer_committee"] = ""
 
         return attrs
+
+    def update(self, instance, validated_data):
+        # Keep the expected fee in sync while payment is still pending
+        if "is_volunteer" in validated_data and instance.status == Student.Status.PENDING_PAYMENT:
+            validated_data["membership_fee"] = 10 if validated_data["is_volunteer"] else 20
+        return super().update(instance, validated_data)
 
 
 class ConfirmPaymentSerializer(serializers.Serializer):

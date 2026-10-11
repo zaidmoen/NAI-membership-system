@@ -175,6 +175,8 @@
 .admin-edit-grid input:focus, .admin-edit-committee select:focus { border-color: #9a83bd; box-shadow: 0 0 0 2px rgba(105,69,190,.09); }
 .admin-edit-volunteer { display: flex; align-items: center; gap: 8px; margin: 14px 0; color: #514d58; font-size: .82rem; font-weight: 600; }
 .admin-edit-volunteer input { accent-color: #6744ad; }
+.admin-edit-fee { margin: -3px 0 12px; color: #716c80; font-size: .78rem; }
+.admin-edit-fee strong { color: #4f3677; }
 .admin-edit-committee { margin-bottom: 3px; }
 
 @media (max-width: 1100px) {

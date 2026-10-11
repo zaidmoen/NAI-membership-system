@@ -102,7 +102,7 @@ export default function MembershipRegistrationPage() {
             <span className="success__status-dot" aria-hidden="true" />
             <span>حالة طلبك: بانتظار الدفع</span>
           </div>
-          <p className="notice">رسوم الانتساب 10. بعد الدفع عند طاولة الجمعية، الإدارة بتأكد عضويتك وبتصير عضو فعال. ما في داعي تعيد التسجيل.</p>
+          <p className="notice">رسوم الانتساب {values.is_volunteer ? 10 : 20} شيكل. بعد الدفع عند طاولة الجمعية، الإدارة بتأكد عضويتك وبتصير عضو فعال. ما في داعي تعيد التسجيل.</p>
         </div>
       ) : (
         <>
@@ -155,7 +155,9 @@ export default function MembershipRegistrationPage() {
 
             <p className="form-note">
               <span className="form-note__dot" aria-hidden="true" />
-              رسوم الانتساب 10، وطلبك بضل بانتظار الدفع لحد ما تأكد الإدارة استلامها عند الطاولة
+              {values.is_volunteer === null
+                ? 'حدد إذا كنت متطوعًا حاليًا عشان تظهر رسوم الانتساب المناسبة'
+                : `رسوم الانتساب ${values.is_volunteer ? 10 : 20} شيكل. طلبك بضل بانتظار الدفع لحد ما تأكد الإدارة استلامها عند الطاولة`}
             </p>
 
             <button className="btn btn--primary" type="submit" disabled={loading} aria-busy={loading}>
