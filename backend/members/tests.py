@@ -155,8 +155,8 @@ class AdminStudentApiTests(TestCase):
         response = self.client.get(reverse("student-list"), {"search": "10002"})
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["full_name"], "Omar Saleh")
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(response.data["results"][0]["full_name"], "Omar Saleh")
 
     def test_admin_can_edit_student_details_and_volunteer_committee(self):
         student = self.create_student("Lina Khalil", "10001")
@@ -225,8 +225,8 @@ class AdminStudentApiTests(TestCase):
         response = self.client.get(reverse("student-list"), {"search": "222222"})
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["full_name"], "Omar Saleh")
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(response.data["results"][0]["full_name"], "Omar Saleh")
 
     def test_admin_can_filter_by_status(self):
         self.create_student("Lina Khalil", "10001")
@@ -239,8 +239,8 @@ class AdminStudentApiTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["university_id"], "10001")
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(response.data["results"][0]["university_id"], "10001")
 
     def test_admin_can_filter_by_volunteer_and_committee(self):
         Student.objects.create(
@@ -261,8 +261,22 @@ class AdminStudentApiTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["university_id"], "10001")
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(response.data["results"][0]["university_id"], "10001")
+
+    def test_admin_student_list_returns_ten_records_per_page(self):
+        for number in range(12):
+            self.create_student(f"Student {number:02d}", f"{10000 + number}")
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(reverse("student-list"), {"page": 2})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["count"], 12)
+        self.assertEqual(response.data["page"], 2)
+        self.assertEqual(response.data["page_size"], 10)
+        self.assertEqual(response.data["total_pages"], 2)
+        self.assertEqual(len(response.data["results"]), 2)
 
     def test_invalid_volunteer_filter_is_rejected(self):
         self.client.force_authenticate(user=self.admin)
