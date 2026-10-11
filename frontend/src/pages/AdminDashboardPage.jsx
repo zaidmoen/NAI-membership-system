@@ -49,6 +49,11 @@ function formatDate(value) {
   }).format(new Date(value))
 }
 
+function formatShortDate(value) {
+  if (!value) return '—'
+  return new Intl.DateTimeFormat('ar-JO', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(value))
+}
+
 function StatCard({ icon, label, value, tone, selected, onClick }) {
   return (
     <button className={`admin-stat admin-stat--${tone} ${selected ? 'admin-stat--selected' : ''}`} type="button" aria-pressed={selected} onClick={onClick}>
@@ -308,8 +313,9 @@ export default function AdminDashboardPage() {
         <div className="admin-content">
           <div className="admin-welcome">
             <div>
-              <h2>نظرة عامة</h2>
-              <p>راجع طلبات الانتساب وتابع حالات الدفع من سجل الطلاب</p>
+              <span className="admin-section-kicker">مساحة العمل</span>
+              <h2>إدارة العضوية</h2>
+              <p>تابع طلبات الانتساب، راجع بيانات الطلاب، وسجّل الدفعات من مكان واحد</p>
             </div>
             <span className={`admin-welcome__badge ${error ? 'admin-welcome__badge--offline' : ''}`}>
               <span /> {loading && !lastUpdated ? 'جارٍ الاتصال' : error ? 'تعذر الاتصال' : 'النظام متصل'}
@@ -325,8 +331,9 @@ export default function AdminDashboardPage() {
           <section className="admin-panel" id="members">
             <div className="admin-panel__heading">
               <div>
+                <span className="admin-section-kicker">قاعدة بيانات الجمعية</span>
                 <h2>سجل الطلاب</h2>
-                <p>{filteredLabel} · {students.length} نتيجة{lastUpdated ? ` · آخر تحديث ${new Intl.DateTimeFormat('ar-JO', { hour: 'numeric', minute: '2-digit' }).format(lastUpdated)}` : ''}</p>
+                <p>{filteredLabel} <span className="admin-result-count">{students.length} سجل</span>{lastUpdated ? ` · آخر تحديث ${new Intl.DateTimeFormat('ar-JO', { hour: 'numeric', minute: '2-digit' }).format(lastUpdated)}` : ''}</p>
               </div>
               <div className="admin-panel__actions">
                 <button className="admin-export" type="button" onClick={handleExport} disabled={exportingCsv || students.length === 0}>
@@ -356,28 +363,33 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="admin-table-wrap" aria-busy={loading}>
-              <p className="admin-table-scroll-note">اسحب الجدول أفقيًا لرؤية بقية البيانات؛ عمود الإجراءات يظل ظاهرًا أثناء التمرير</p>
               {loading && students.length > 0 && <p className="admin-loading-note" role="status">جارٍ تحديث النتائج...</p>}
+              <p className="admin-table-scroll-note">تفاصيل كل طالب مرتبة ضمن مجموعات لتسهيل المراجعة</p>
               <table className="admin-table">
                 <thead><tr>
-                  <th scope="col">الطالب</th><th scope="col">الرقم الجامعي</th><th scope="col">التخصص</th>
-                  <th scope="col">رقم الواتساب</th><th scope="col">متطوع حالي</th><th scope="col">اللجنة</th><th scope="col">الرسوم</th>
-                  <th scope="col">تاريخ التسجيل</th><th scope="col">تأكيد الدفع</th><th scope="col">مستلم الدفعة</th><th scope="col">الحالة</th><th scope="col">الإجراءات</th>
+                  <th scope="col">الطالب</th><th scope="col">التواصل والتخصص</th><th scope="col">الانتساب</th>
+                  <th scope="col">الرسوم</th><th scope="col">تاريخ التسجيل</th><th scope="col">حالة الدفع</th><th scope="col">الإجراءات</th>
                 </tr></thead>
                 <tbody>
                   {students.map((student) => (
                     <tr key={student.id}>
-                      <td data-label="الطالب"><strong className="admin-student-name">{student.full_name}</strong></td>
-                      <td data-label="الرقم الجامعي" dir="ltr">{student.university_id}</td>
-                      <td data-label="التخصص">{student.major}</td>
-                      <td data-label="رقم الواتساب" dir="ltr">{student.whatsapp}</td>
-                      <td data-label="متطوع حالي">{student.is_volunteer ? 'نعم' : 'لا'}</td>
-                      <td data-label="اللجنة">{student.is_volunteer ? (COMMITTEE_LABELS[student.volunteer_committee] || '—') : '—'}</td>
-                      <td data-label="الرسوم">{student.membership_fee} شيكل</td>
-                      <td data-label="تاريخ التسجيل">{formatDate(student.registered_at)}</td>
-                      <td data-label="تأكيد الدفع">{formatDate(student.payment_confirmed_at)}</td>
-                      <td data-label="مستلم الدفعة">{student.payment_confirmed_by_name || '—'}</td>
-                      <td data-label="الحالة"><span className={`admin-status admin-status--${student.status}`}><i />{STATUS_LABELS[student.status]}</span></td>
+                      <td data-label="الطالب">
+                        <div className="admin-student-cell">
+                          <span className="admin-student-avatar" aria-hidden="true">{student.full_name?.trim()?.charAt(0) || 'ط'}</span>
+                          <span className="admin-student-copy"><strong className="admin-student-name">{student.full_name}</strong><small dir="ltr">{student.university_id}</small></span>
+                        </div>
+                      </td>
+                      <td data-label="التواصل والتخصص">
+                        <div className="admin-detail-stack"><strong>{student.major}</strong><a href={`https://wa.me/${String(student.whatsapp || '').replace(/\D/g, '')}`} target="_blank" rel="noreferrer" dir="ltr">{student.whatsapp}</a></div>
+                      </td>
+                      <td data-label="الانتساب">
+                        <div className="admin-detail-stack"><span className={`admin-volunteer-tag ${student.is_volunteer ? 'is-volunteer' : ''}`}>{student.is_volunteer ? 'متطوع حالي' : 'انتساب عادي'}</span><small>{student.is_volunteer ? (COMMITTEE_LABELS[student.volunteer_committee] || 'اللجنة غير محددة') : 'غير متطوع'}</small></div>
+                      </td>
+                      <td data-label="الرسوم"><strong className="admin-fee">{student.membership_fee} <small>شيكل</small></strong></td>
+                      <td data-label="تاريخ التسجيل"><span className="admin-date">{formatShortDate(student.registered_at)}</span></td>
+                      <td data-label="حالة الدفع">
+                        <div className="admin-payment-cell"><span className={`admin-status admin-status--${student.status}`}><i />{STATUS_LABELS[student.status]}</span>{student.status === 'active_member' && <small>{student.payment_confirmed_by_name ? `استلمها ${student.payment_confirmed_by_name}` : 'تم تأكيد الدفع'} · {formatDate(student.payment_confirmed_at)}</small>}</div>
+                      </td>
                       <td data-label="الإجراءات">
                         <div className="admin-row-actions">
                           {student.status === 'pending_payment' ? (
