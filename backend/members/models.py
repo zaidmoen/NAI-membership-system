@@ -21,6 +21,7 @@ class Student(models.Model):
     )
     registered_at = models.DateTimeField(auto_now_add=True)
     payment_confirmed_at = models.DateTimeField(null=True, blank=True)
+    payment_confirmed_by_name = models.CharField(max_length=100, blank=True, default="")
     payment_confirmed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -34,3 +35,4 @@ class Student(models.Model):
 
     def __str__(self):
         return f"{self.full_name} ({self.university_id})"
+
