@@ -38,19 +38,21 @@ async function request(url, options = {}) {
   return data
 }
 
-export async function getStudents({ search = '', status = '', isVolunteer = '', committee = '' } = {}) {
+export async function getStudents({ search = '', status = '', isVolunteer = '', committee = '', page = 1, sort = 'newest' } = {}) {
   const params = new URLSearchParams()
   if (search.trim()) params.set('search', search.trim())
   if (status) params.set('status', status)
   if (isVolunteer) params.set('is_volunteer', isVolunteer)
   if (committee) params.set('volunteer_committee', committee)
+  params.set('page', page)
+  params.set('sort', sort)
   const query = params.toString()
   const data = await request(`${STUDENTS_ENDPOINT}${query ? `?${query}` : ''}`)
-  if (!Array.isArray(data)) {
+  if (!data || !Array.isArray(data.results) || !Number.isInteger(data.count) || !Number.isInteger(data.total_pages)) {
     throw new Error('استجابة الطلاب مش قائمة، تحقق من إعدادات الربط بين Vercel وDjango')
   }
 
-  return data
+  return { results: data.results, count: data.count, totalPages: data.total_pages }
 }
 
 export function getMembershipSummary() {
