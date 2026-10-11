@@ -1,7 +1,7 @@
 import csv
 
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -24,6 +24,8 @@ def get_filtered_students(query_params):
     students = Student.objects.all()
     search_text = query_params.get("search", "").strip()
     status_filter = query_params.get("status", "").strip()
+    volunteer_filter = query_params.get("is_volunteer", "").strip().lower()
+    committee_filter = query_params.get("volunteer_committee", "").strip()
 
     if search_text:
         students = students.filter(
@@ -37,6 +39,17 @@ def get_filtered_students(query_params):
         if status_filter not in allowed_statuses:
             return None, {"status": ["Use pending_payment or active_member"]}
         students = students.filter(status=status_filter)
+
+    if volunteer_filter:
+        if volunteer_filter not in {"true", "false"}:
+            return None, {"is_volunteer": ["Use true or false"]}
+        students = students.filter(is_volunteer=volunteer_filter == "true")
+
+    allowed_committees = [value for value, _label in Student.Committee.choices]
+    if committee_filter:
+        if committee_filter not in allowed_committees:
+            return None, {"volunteer_committee": ["Choose a valid committee"]}
+        students = students.filter(volunteer_committee=committee_filter, is_volunteer=True)
 
     return students, None
 
@@ -160,7 +173,12 @@ class MembershipSummaryView(APIView):
                 "id",
                 filter=Q(status=Student.Status.ACTIVE_MEMBER),
             ),
+            volunteer_students=Count("id", filter=Q(is_volunteer=True)),
+            confirmed_fees=Sum("membership_fee", filter=Q(status=Student.Status.ACTIVE_MEMBER)),
+            pending_fees=Sum("membership_fee", filter=Q(status=Student.Status.PENDING_PAYMENT)),
         )
+        summary["confirmed_fees"] = summary["confirmed_fees"] or 0
+        summary["pending_fees"] = summary["pending_fees"] or 0
         return Response(summary)
 
 

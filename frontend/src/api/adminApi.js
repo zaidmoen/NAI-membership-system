@@ -38,10 +38,12 @@ async function request(url, options = {}) {
   return data
 }
 
-export async function getStudents({ search = '', status = '' } = {}) {
+export async function getStudents({ search = '', status = '', isVolunteer = '', committee = '' } = {}) {
   const params = new URLSearchParams()
   if (search.trim()) params.set('search', search.trim())
   if (status) params.set('status', status)
+  if (isVolunteer) params.set('is_volunteer', isVolunteer)
+  if (committee) params.set('volunteer_committee', committee)
   const query = params.toString()
   const data = await request(`${STUDENTS_ENDPOINT}${query ? `?${query}` : ''}`)
   if (!Array.isArray(data)) {
@@ -100,10 +102,12 @@ export async function deleteStudent(studentId) {
   if (!response.ok) throw new Error('ما قدرنا نحذف سجل الطالب، حاول مرة ثانية')
 }
 
-export async function downloadStudentsCsv({ search = '', status = '' } = {}) {
+export async function downloadStudentsCsv({ search = '', status = '', isVolunteer = '', committee = '' } = {}) {
   const params = new URLSearchParams()
   if (search.trim()) params.set('search', search.trim())
   if (status) params.set('status', status)
+  if (isVolunteer) params.set('is_volunteer', isVolunteer)
+  if (committee) params.set('volunteer_committee', committee)
 
   const query = params.toString()
   let response
