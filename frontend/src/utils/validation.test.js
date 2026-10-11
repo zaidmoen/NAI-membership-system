@@ -7,6 +7,8 @@ const valid = {
   major: 'هندسة الحاسوب',
   university_id: '12001234',
   whatsapp: '+970 59 123 4567',
+  is_volunteer: false,
+  volunteer_committee: '',
 }
 
 describe('validateRegistration', () => {
@@ -16,7 +18,7 @@ describe('validateRegistration', () => {
 
   it('requires all four registration fields', () => {
     const errors = validateRegistration({ full_name: '  ', university_id: '' })
-    expect(Object.keys(errors).sort()).toEqual(['full_name', 'major', 'university_id', 'whatsapp'])
+    expect(Object.keys(errors).sort()).toEqual(['full_name', 'is_volunteer', 'major', 'university_id', 'whatsapp'])
   })
 
   it('accepts a WhatsApp number with common separators', () => {
@@ -25,6 +27,15 @@ describe('validateRegistration', () => {
 
   it('rejects an invalid WhatsApp number', () => {
     expect(validateRegistration({ ...valid, whatsapp: 'not a number' }).whatsapp).toBe('أدخل رقم واتساب صحيح')
+  })
+
+  it('requires a committee when the student is a current volunteer', () => {
+    expect(validateRegistration({ ...valid, is_volunteer: true }).volunteer_committee).toBe('اختر اللجنة التي تتطوع فيها')
+    expect(validateRegistration({ ...valid, is_volunteer: true, volunteer_committee: 'technical' })).toEqual({})
+  })
+
+  it('requires the student to answer whether they are a current volunteer', () => {
+    expect(validateRegistration({ ...valid, is_volunteer: null }).is_volunteer).toBe('حدد إذا كنت متطوعًا حاليًا')
   })
 })
 
@@ -35,6 +46,8 @@ describe('registration API mapping', () => {
       major: 'هندسة الحاسوب',
       university_id: '12001234',
       whatsapp: '+970 59 123 4567',
+      is_volunteer: false,
+      volunteer_committee: '',
     })
   })
 

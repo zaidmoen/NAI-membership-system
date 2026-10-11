@@ -9,6 +9,8 @@ export function buildRegistrationPayload(values) {
     major: values.major.trim(),
     university_id: values.university_id.trim(),
     whatsapp: values.whatsapp.trim(),
+    is_volunteer: values.is_volunteer,
+    volunteer_committee: values.is_volunteer ? values.volunteer_committee : '',
   }
 }
 
@@ -20,6 +22,8 @@ export function mapBackendErrors(data) {
   if (data.major) errors.major = [].concat(data.major).join(' ')
   if (data.university_id) errors.university_id = [].concat(data.university_id).join(' ')
   if (data.whatsapp) errors.whatsapp = [].concat(data.whatsapp).join(' ')
+  if (data.is_volunteer) errors.is_volunteer = [].concat(data.is_volunteer).join(' ')
+  if (data.volunteer_committee) errors.volunteer_committee = [].concat(data.volunteer_committee).join(' ')
   return errors
 }
 

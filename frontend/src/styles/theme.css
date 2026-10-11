@@ -389,6 +389,57 @@ button, input { font: inherit; }
 .field__hint { color: #79748e; }
 .field__error { color: var(--danger); }
 
+.choice-field {
+  min-width: 0;
+  margin: 0 0 18px;
+  padding: 14px;
+  border: 1px solid #e7e2ef;
+  border-radius: 13px;
+  background: #faf9fd;
+}
+.choice-field legend,
+.choice-field--committee > label {
+  padding: 0 3px;
+  color: #342950;
+  font-size: .93rem;
+  font-weight: 700;
+}
+.choice-field > p { margin: 3px 0 10px; color: #79748e; font-size: .8rem; line-height: 1.55; }
+.choice-field__options { display: flex; flex-wrap: wrap; gap: 9px; }
+.choice-field__options label {
+  display: flex;
+  flex: 1 1 170px;
+  align-items: center;
+  gap: 8px;
+  min-height: 43px;
+  padding: 8px 10px;
+  border: 1px solid #e7e2ef;
+  border-radius: 9px;
+  color: #51486a;
+  background: #fff;
+  cursor: pointer;
+  font-size: .86rem;
+}
+.choice-field__options label:has(input:checked) { border-color: #9b83c8; background: #f5f0ff; }
+.choice-field input[type="radio"] { accent-color: #7440f2; }
+.choice-field--error { border-color: var(--danger); }
+.choice-field__error { display: block; margin-top: 7px; color: var(--danger); font-size: .82rem; }
+.choice-field--committee { padding: 0; border: 0; background: transparent; animation: rise-in .22s ease both; }
+.choice-field--committee > label { display: block; margin: 0 0 8px; }
+.choice-field--committee select {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 13px;
+  border: 1px solid #e7e2ef;
+  border-radius: 13px;
+  outline: 0;
+  color: var(--ink);
+  background: #faf9fd;
+  font: inherit;
+}
+.choice-field--committee select:focus { border-color: #8b6bd3; box-shadow: 0 0 0 3px rgba(116, 64, 242, .09); }
+.choice-field--committee.choice-field--error select { border-color: var(--danger); }
+
 .form-note {
   display: flex;
   align-items: flex-start;

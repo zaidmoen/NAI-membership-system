@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { confirmStudentPayment, downloadStudentsCsv, getMembershipSummary, getStudents } from '../api/adminApi'
+import { confirmStudentPayment, deleteStudent, downloadStudentsCsv, getMembershipSummary, getStudents, updateStudent } from '../api/adminApi'
 import naiLogo from '../assets/nai-logo.png'
 import './admin-dashboard.css'
 
@@ -13,6 +13,14 @@ const STATUS_LABELS = {
   active_member: 'عضو فعال',
 }
 
+const COMMITTEE_LABELS = {
+  public_relations: 'العلاقات العامة',
+  activities: 'الأنشطة',
+  technical: 'اللجنة التقنية',
+  media: 'اللجنة الإعلامية',
+  ai_activities: 'أنشطة الذكاء الاصطناعي المتخصصة',
+}
+
 function Icon({ name }) {
   const paths = {
     members: <><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="10" cy="7" r="4" /><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
@@ -22,6 +30,8 @@ function Icon({ name }) {
     logout: <><path d="M10 17l5-5-5-5" /><path d="M15 12H3" /><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" /></>,
     arrow: <><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>,
     check: <><path d="m5 12 4 4L19 6" /></>,
+    edit: <><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z" /></>,
+    trash: <><path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="m19 6-1 14H6L5 6" /><path d="M10 11v5M14 11v5" /></>,
     close: <><path d="m18 6-12 12M6 6l12 12" /></>,
   }
 
@@ -89,7 +99,12 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState('')
   const [loginRequired, setLoginRequired] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState(null)
+  const [editingStudent, setEditingStudent] = useState(null)
+  const [editForm, setEditForm] = useState(null)
+  const [deletingStudent, setDeletingStudent] = useState(null)
   const [savingPayment, setSavingPayment] = useState(false)
+  const [savingEdit, setSavingEdit] = useState(false)
+  const [savingDelete, setSavingDelete] = useState(false)
   const [operatorName, setOperatorName] = useState('')
   const [exportingCsv, setExportingCsv] = useState(false)
   const [notice, setNotice] = useState('')
@@ -200,6 +215,63 @@ export default function AdminDashboardPage() {
     }
   }
 
+  const openEdit = (student) => {
+    setEditingStudent(student)
+    setEditForm({
+      full_name: student.full_name,
+      university_id: student.university_id,
+      major: student.major,
+      whatsapp: student.whatsapp,
+      is_volunteer: student.is_volunteer,
+      volunteer_committee: student.volunteer_committee || '',
+    })
+  }
+
+  const handleEditChange = (event) => {
+    const { name, value, type, checked } = event.target
+    setEditForm((current) => ({
+      ...current,
+      [name]: type === 'checkbox' ? checked : value,
+      ...(name === 'is_volunteer' && !checked ? { volunteer_committee: '' } : {}),
+    }))
+  }
+
+  const handleSaveEdit = async (event) => {
+    event.preventDefault()
+    if (!editingStudent || !editForm) return
+    setSavingEdit(true)
+    setError('')
+    try {
+      await updateStudent(editingStudent.id, editForm)
+      setEditingStudent(null)
+      setEditForm(null)
+      setNotice(`تم تحديث بيانات ${editForm.full_name} بنجاح`)
+      await loadDashboard()
+    } catch (updateError) {
+      if (updateError.kind === 'unauthorized') setLoginRequired(true)
+      else setError(updateError.message)
+    } finally {
+      setSavingEdit(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!deletingStudent) return
+    setSavingDelete(true)
+    setError('')
+    try {
+      await deleteStudent(deletingStudent.id)
+      setNotice(`تم حذف سجل ${deletingStudent.full_name}`)
+      setDeletingStudent(null)
+      await loadDashboard()
+    } catch (deleteError) {
+      if (deleteError.kind === 'unauthorized') setLoginRequired(true)
+      else setError(deleteError.message)
+    } finally {
+      setSavingDelete(false)
+    }
+  }
+
   if (loginRequired) return <LoginRequired />
 
   return (
@@ -288,7 +360,8 @@ export default function AdminDashboardPage() {
               <table className="admin-table">
                 <thead><tr>
                   <th scope="col">الطالب</th><th scope="col">الرقم الجامعي</th><th scope="col">التخصص</th>
-                  <th scope="col">رقم الواتساب</th><th scope="col">تاريخ التسجيل</th><th scope="col">تأكيد الدفع</th><th scope="col">مستلم الدفعة</th><th scope="col">الحالة</th><th scope="col">الإجراء</th>
+                  <th scope="col">رقم الواتساب</th><th scope="col">متطوع حالي</th><th scope="col">اللجنة</th>
+                  <th scope="col">تاريخ التسجيل</th><th scope="col">تأكيد الدفع</th><th scope="col">مستلم الدفعة</th><th scope="col">الحالة</th><th scope="col">الإجراءات</th>
                 </tr></thead>
                 <tbody>
                   {students.map((student) => (
@@ -297,14 +370,20 @@ export default function AdminDashboardPage() {
                       <td data-label="الرقم الجامعي" dir="ltr">{student.university_id}</td>
                       <td data-label="التخصص">{student.major}</td>
                       <td data-label="رقم الواتساب" dir="ltr">{student.whatsapp}</td>
+                      <td data-label="متطوع حالي">{student.is_volunteer ? 'نعم' : 'لا'}</td>
+                      <td data-label="اللجنة">{student.is_volunteer ? (COMMITTEE_LABELS[student.volunteer_committee] || '—') : '—'}</td>
                       <td data-label="تاريخ التسجيل">{formatDate(student.registered_at)}</td>
                       <td data-label="تأكيد الدفع">{formatDate(student.payment_confirmed_at)}</td>
                       <td data-label="مستلم الدفعة">{student.payment_confirmed_by_name || '—'}</td>
                       <td data-label="الحالة"><span className={`admin-status admin-status--${student.status}`}><i />{STATUS_LABELS[student.status]}</span></td>
-                      <td data-label="الإجراء">
-                        {student.status === 'pending_payment' ? (
-                          <button className="admin-confirm" type="button" onClick={() => { setOperatorName(''); setSelectedStudent(student) }}>تأكيد الدفع</button>
-                        ) : <span className="admin-confirmed"><Icon name="check" /> تم التأكيد</span>}
+                      <td data-label="الإجراءات">
+                        <div className="admin-row-actions">
+                          {student.status === 'pending_payment' ? (
+                            <button className="admin-confirm" type="button" onClick={() => { setOperatorName(''); setSelectedStudent(student) }}>تأكيد الدفع</button>
+                          ) : <span className="admin-confirmed"><Icon name="check" /> تم التأكيد</span>}
+                          <button className="admin-row-action" type="button" onClick={() => openEdit(student)} aria-label={`تعديل بيانات ${student.full_name}`} title="تعديل البيانات"><Icon name="edit" /></button>
+                          <button className="admin-row-action admin-row-action--delete" type="button" onClick={() => setDeletingStudent(student)} aria-label={`حذف ${student.full_name}`} title="حذف السجل"><Icon name="trash" /></button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -344,6 +423,49 @@ export default function AdminDashboardPage() {
               <button type="button" className="admin-modal__confirm" onClick={handleConfirm} disabled={savingPayment || !operatorName.trim()}>
                 {savingPayment ? 'جارٍ التأكيد...' : 'نعم، أكد الدفع'}
               </button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {editingStudent && editForm && (
+        <div className="admin-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !savingEdit) setEditingStudent(null) }}>
+          <form className="admin-modal admin-modal--edit" onSubmit={handleSaveEdit} role="dialog" aria-modal="true" aria-labelledby="edit-title" dir="rtl">
+            <h2 id="edit-title">تعديل بيانات الطالب</h2>
+            <p>حدّث البيانات المطلوبة، وسيتم التحقق من الرقم الجامعي ورقم الواتساب قبل الحفظ</p>
+            <div className="admin-edit-grid">
+              <label>الاسم الكامل<input name="full_name" value={editForm.full_name} onChange={handleEditChange} maxLength={150} required /></label>
+              <label>الرقم الجامعي<input name="university_id" value={editForm.university_id} onChange={handleEditChange} maxLength={30} required /></label>
+              <label>التخصص<input name="major" value={editForm.major} onChange={handleEditChange} maxLength={100} required /></label>
+              <label>رقم الواتساب<input name="whatsapp" value={editForm.whatsapp} onChange={handleEditChange} maxLength={25} dir="ltr" required /></label>
+            </div>
+            <label className="admin-edit-volunteer"><input type="checkbox" name="is_volunteer" checked={editForm.is_volunteer} onChange={handleEditChange} /> متطوع حالي في الجمعية</label>
+            {editForm.is_volunteer && (
+              <label className="admin-edit-committee">اللجنة
+                <select name="volunteer_committee" value={editForm.volunteer_committee} onChange={handleEditChange} required>
+                  <option value="">اختر اللجنة</option>
+                  {Object.entries(COMMITTEE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                </select>
+              </label>
+            )}
+            <div className="admin-modal__actions">
+              <button type="button" className="admin-modal__cancel" onClick={() => setEditingStudent(null)} disabled={savingEdit}>إلغاء</button>
+              <button type="submit" className="admin-modal__confirm" disabled={savingEdit}>{savingEdit ? 'جارٍ الحفظ...' : 'حفظ التعديلات'}</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {deletingStudent && (
+        <div className="admin-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !savingDelete) setDeletingStudent(null) }}>
+          <section className="admin-modal" role="alertdialog" aria-modal="true" aria-labelledby="delete-title" dir="rtl">
+            <span className="admin-modal__icon admin-modal__icon--danger"><Icon name="trash" /></span>
+            <h2 id="delete-title">حذف سجل الطالب؟</h2>
+            <p>سيتم حذف سجل <strong>{deletingStudent.full_name}</strong> نهائيًا. لا يمكن التراجع عن هذه الخطوة.</p>
+            <div className="admin-modal__student">الرقم الجامعي <b dir="ltr">{deletingStudent.university_id}</b></div>
+            <div className="admin-modal__actions">
+              <button type="button" className="admin-modal__cancel" onClick={() => setDeletingStudent(null)} disabled={savingDelete}>إلغاء</button>
+              <button type="button" className="admin-modal__delete" onClick={handleDelete} disabled={savingDelete}>{savingDelete ? 'جارٍ الحذف...' : 'احذف السجل'}</button>
             </div>
           </section>
         </div>

@@ -7,6 +7,13 @@ class Student(models.Model):
         PENDING_PAYMENT = "pending_payment", "Pending Payment"
         ACTIVE_MEMBER = "active_member", "Active Member"
 
+    class Committee(models.TextChoices):
+        PUBLIC_RELATIONS = "public_relations", "العلاقات العامة"
+        ACTIVITIES = "activities", "الأنشطة"
+        TECHNICAL = "technical", "اللجنة التقنية"
+        MEDIA = "media", "اللجنة الإعلامية"
+        AI_ACTIVITIES = "ai_activities", "أنشطة الذكاء الاصطناعي المتخصصة"
+
     full_name = models.CharField(max_length=150)
     major = models.CharField(max_length=100)
 
@@ -14,6 +21,13 @@ class Student(models.Model):
     university_id = models.CharField(max_length=30, unique=True)
 
     whatsapp = models.CharField(max_length=25)
+    is_volunteer = models.BooleanField(default=False)
+    volunteer_committee = models.CharField(
+        max_length=30,
+        choices=Committee.choices,
+        blank=True,
+        default="",
+    )
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
