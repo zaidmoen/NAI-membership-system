@@ -161,6 +161,7 @@ class AdminStudentApiTests(TestCase):
 
         response = self.client.post(
             reverse("confirm-payment", args=[student.id]),
+            {"confirmed_by_name": "  Zaid   Mayala  "},
             format="json",
         )
 
@@ -168,14 +169,47 @@ class AdminStudentApiTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(student.status, Student.Status.ACTIVE_MEMBER)
         self.assertIsNotNone(student.payment_confirmed_at)
+        self.assertEqual(student.payment_confirmed_by_name, "Zaid Mayala")
         self.assertEqual(student.payment_confirmed_by, self.admin)
 
         second_response = self.client.post(
             reverse("confirm-payment", args=[student.id]),
+            {"confirmed_by_name": "Zaid Mayala"},
             format="json",
         )
 
         self.assertEqual(second_response.status_code, 409)
+
+    def test_payment_confirmation_requires_receiver_name(self):
+        student = self.create_student("Lina Khalil", "10001")
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.post(
+            reverse("confirm-payment", args=[student.id]),
+            {"confirmed_by_name": "   "},
+            format="json",
+        )
+
+        student.refresh_from_db()
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(student.status, Student.Status.PENDING_PAYMENT)
+
+    def test_admin_can_export_filtered_students_as_csv(self):
+        self.create_student("Lina Khalil", "10001")
+        self.create_student("Omar Saleh", "10002", status=Student.Status.ACTIVE_MEMBER)
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(
+            reverse("student-export"),
+            {"search": "Omar", "status": Student.Status.ACTIVE_MEMBER},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/csv", response["Content-Type"])
+        self.assertIn("attachment; filename=\"nai-members.csv\"", response["Content-Disposition"])
+        self.assertTrue(response.content.startswith(b"\xef\xbb\xbf"))
+        self.assertIn("Omar Saleh".encode(), response.content)
+        self.assertNotIn("Lina Khalil".encode(), response.content)
 
     def test_admin_can_view_membership_summary(self):
         self.create_student("Lina Khalil", "10001")
@@ -188,3 +222,4 @@ class AdminStudentApiTests(TestCase):
         self.assertEqual(response.data["total_students"], 2)
         self.assertEqual(response.data["pending_payment"], 2)
         self.assertEqual(response.data["active_members"], 0)
+

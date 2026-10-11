@@ -1,5 +1,6 @@
 const STUDENTS_ENDPOINT = '/api/students/'
 const SUMMARY_ENDPOINT = '/api/students/summary/'
+const CSV_ENDPOINT = '/api/students/export/'
 
 function getCookie(name) {
   const cookie = document.cookie.split('; ').find((item) => item.startsWith(`${name}=`))
@@ -43,7 +44,6 @@ export async function getStudents({ search = '', status = '' } = {}) {
   if (status) params.set('status', status)
   const query = params.toString()
   const data = await request(`${STUDENTS_ENDPOINT}${query ? `?${query}` : ''}`)
-
   if (!Array.isArray(data)) {
     throw new Error('استجابة الطلاب مش قائمة، تحقق من إعدادات الربط بين Vercel وDjango')
   }
@@ -55,7 +55,7 @@ export function getMembershipSummary() {
   return request(SUMMARY_ENDPOINT)
 }
 
-export function confirmStudentPayment(studentId) {
+export function confirmStudentPayment(studentId, confirmedByName) {
   const csrfToken = getCookie('csrftoken')
   return request(`${STUDENTS_ENDPOINT}${studentId}/confirm-payment/`, {
     method: 'POST',
@@ -63,6 +63,41 @@ export function confirmStudentPayment(studentId) {
       'Content-Type': 'application/json',
       ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
     },
-    body: JSON.stringify({}),
+    body: JSON.stringify({ confirmed_by_name: confirmedByName }),
   })
+}
+
+export async function downloadStudentsCsv({ search = '', status = '' } = {}) {
+  const params = new URLSearchParams()
+  if (search.trim()) params.set('search', search.trim())
+  if (status) params.set('status', status)
+
+  const query = params.toString()
+  let response
+  try {
+    response = await fetch(`${CSV_ENDPOINT}${query ? `?${query}` : ''}`, {
+      credentials: 'same-origin',
+      headers: { Accept: 'text/csv' },
+    })
+  } catch {
+    throw new Error('تعذر الاتصال بالخادم، تأكد أن Django يعمل وحاول مرة ثانية')
+  }
+
+  if (response.status === 401 || response.status === 403) {
+    const error = new Error('لازم تسجل دخولك بحساب أدمن عشان تصدّر البيانات')
+    error.kind = 'unauthorized'
+    throw error
+  }
+  if (!response.ok) {
+    throw new Error('ما قدرنا نصدّر البيانات، حاول مرة ثانية')
+  }
+
+  const fileUrl = URL.createObjectURL(await response.blob())
+  const downloadLink = document.createElement('a')
+  downloadLink.href = fileUrl
+  downloadLink.download = 'nai-members.csv'
+  document.body.appendChild(downloadLink)
+  downloadLink.click()
+  downloadLink.remove()
+  window.setTimeout(() => URL.revokeObjectURL(fileUrl), 1000)
 }
