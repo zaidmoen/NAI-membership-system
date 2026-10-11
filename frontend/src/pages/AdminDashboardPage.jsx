@@ -356,6 +356,7 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="admin-table-wrap" aria-busy={loading}>
+              <p className="admin-table-scroll-note">اسحب الجدول أفقيًا لرؤية بقية البيانات؛ عمود الإجراءات يظل ظاهرًا أثناء التمرير</p>
               {loading && students.length > 0 && <p className="admin-loading-note" role="status">جارٍ تحديث النتائج...</p>}
               <table className="admin-table">
                 <thead><tr>
