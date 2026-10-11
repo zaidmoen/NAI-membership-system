@@ -100,10 +100,15 @@ export default function AdminDashboardPage() {
   const [summary, setSummary] = useState(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [volunteerFilter, setVolunteerFilter] = useState('')
+  const [committeeFilter, setCommitteeFilter] = useState('')
+  const [sortBy, setSortBy] = useState('newest')
+  const [currentPage, setCurrentPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [loginRequired, setLoginRequired] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState(null)
+  const [detailsStudent, setDetailsStudent] = useState(null)
   const [editingStudent, setEditingStudent] = useState(null)
   const [editForm, setEditForm] = useState(null)
   const [deletingStudent, setDeletingStudent] = useState(null)
@@ -123,7 +128,7 @@ export default function AdminDashboardPage() {
     setError('')
     try {
       const [studentRows, totals] = await Promise.all([
-        getStudents({ search, status: statusFilter }),
+        getStudents({ search, status: statusFilter, isVolunteer: volunteerFilter, committee: committeeFilter }),
         getMembershipSummary(),
       ])
       if (currentRequest !== requestNumber.current) return
@@ -138,12 +143,16 @@ export default function AdminDashboardPage() {
     } finally {
       if (currentRequest === requestNumber.current) setLoading(false)
     }
-  }, [search, statusFilter])
+  }, [search, statusFilter, volunteerFilter, committeeFilter])
 
   useEffect(() => {
     const timeout = window.setTimeout(loadDashboard, search ? 250 : 0)
     return () => window.clearTimeout(timeout)
   }, [loadDashboard, search])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [search, statusFilter, volunteerFilter, committeeFilter, sortBy])
 
   useEffect(() => {
     if (!selectedStudent) return undefined
@@ -185,10 +194,43 @@ export default function AdminDashboardPage() {
   }, [selectedStudent, savingPayment])
 
   const filteredLabel = useMemo(() => {
-    if (statusFilter === 'pending_payment') return 'طلبات بانتظار الدفع'
-    if (statusFilter === 'active_member') return 'الأعضاء الفعالون'
-    return 'كل الطلاب'
-  }, [statusFilter])
+    const labels = []
+    if (statusFilter === 'pending_payment') labels.push('طلبات بانتظار الدفع')
+    else if (statusFilter === 'active_member') labels.push('الأعضاء الفعالون')
+    else labels.push('كل الطلاب')
+    if (volunteerFilter === 'true') labels.push('متطوعون')
+    if (volunteerFilter === 'false') labels.push('انتساب عادي')
+    if (committeeFilter) labels.push(COMMITTEE_LABELS[committeeFilter])
+    return labels.join(' · ')
+  }, [statusFilter, volunteerFilter, committeeFilter])
+
+  const sortedStudents = useMemo(() => [...students].sort((a, b) => {
+    if (sortBy === 'oldest') return new Date(a.registered_at) - new Date(b.registered_at)
+    if (sortBy === 'name') return a.full_name.localeCompare(b.full_name, 'ar')
+    if (sortBy === 'pending') {
+      const statusOrder = (a.status === 'pending_payment' ? 0 : 1) - (b.status === 'pending_payment' ? 0 : 1)
+      if (statusOrder) return statusOrder
+      return new Date(b.registered_at) - new Date(a.registered_at)
+    }
+    return new Date(b.registered_at) - new Date(a.registered_at)
+  }), [students, sortBy])
+  const pageSize = 10
+  const totalPages = Math.max(1, Math.ceil(sortedStudents.length / pageSize))
+  const pageStudents = sortedStudents.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  const firstVisibleRecord = sortedStudents.length ? (currentPage - 1) * pageSize + 1 : 0
+  const lastVisibleRecord = Math.min(currentPage * pageSize, sortedStudents.length)
+  const pageNumbers = useMemo(() => {
+    const numbers = []
+    for (let page = 1; page <= totalPages; page += 1) {
+      if (page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1) numbers.push(page)
+      else if (numbers[numbers.length - 1] !== '…') numbers.push('…')
+    }
+    return numbers
+  }, [currentPage, totalPages])
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages)
+  }, [currentPage, totalPages])
 
   const handleConfirm = async () => {
     if (!selectedStudent || !operatorName.trim()) return
@@ -211,7 +253,7 @@ export default function AdminDashboardPage() {
     setExportingCsv(true)
     setError('')
     try {
-      await downloadStudentsCsv({ search, status: statusFilter })
+      await downloadStudentsCsv({ search, status: statusFilter, isVolunteer: volunteerFilter, committee: committeeFilter })
     } catch (exportError) {
       if (exportError.kind === 'unauthorized') setLoginRequired(true)
       else setError(exportError.message)
@@ -221,6 +263,7 @@ export default function AdminDashboardPage() {
   }
 
   const openEdit = (student) => {
+    setDetailsStudent(null)
     setEditingStudent(student)
     setEditForm({
       full_name: student.full_name,
@@ -230,6 +273,11 @@ export default function AdminDashboardPage() {
       is_volunteer: student.is_volunteer,
       volunteer_committee: student.volunteer_committee || '',
     })
+  }
+
+  const changePage = (page) => {
+    setCurrentPage(page)
+    document.getElementById('members')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   const handleEditChange = (event) => {
@@ -328,6 +376,12 @@ export default function AdminDashboardPage() {
             <StatCard icon="active" label="أعضاء فعالون" value={summary?.active_members} tone="green" selected={statusFilter === 'active_member'} onClick={() => setStatusFilter('active_member')} />
           </section>
 
+          <section className="admin-money-strip" aria-label="ملخص رسوم الانتساب">
+            <div><span>رسوم مؤكدة</span><strong>{summary?.confirmed_fees ?? '—'} <small>شيكل</small></strong><small>إجمالي رسوم الأعضاء الفعالين</small></div>
+            <div><span>قيد التحصيل</span><strong>{summary?.pending_fees ?? '—'} <small>شيكل</small></strong><small>رسوم طلبات الانتساب المعلقة</small></div>
+            <div><span>المتطوعون المسجلون</span><strong>{summary?.volunteer_students ?? '—'}</strong><small>من إجمالي سجلات الجمعية</small></div>
+          </section>
+
           <section className="admin-panel" id="members">
             <div className="admin-panel__heading">
               <div>
@@ -362,6 +416,13 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
+            <div className="admin-filter-row">
+              <label><span>نوع الانتساب</span><select value={volunteerFilter} onChange={(event) => setVolunteerFilter(event.target.value)}><option value="">الكل</option><option value="true">متطوع حالي</option><option value="false">انتساب عادي</option></select></label>
+              <label><span>اللجنة</span><select value={committeeFilter} onChange={(event) => setCommitteeFilter(event.target.value)}><option value="">كل اللجان</option>{Object.entries(COMMITTEE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+              <label className="admin-sort-select"><span>ترتيب النتائج</span><select value={sortBy} onChange={(event) => setSortBy(event.target.value)}><option value="newest">الأحدث تسجيلًا</option><option value="oldest">الأقدم تسجيلًا</option><option value="pending">طلبات الدفع أولًا</option><option value="name">الاسم أبجديًا</option></select></label>
+              {(statusFilter || volunteerFilter || committeeFilter || search) && <button className="admin-clear-filters" type="button" onClick={() => { setSearch(''); setStatusFilter(''); setVolunteerFilter(''); setCommitteeFilter('') }}>مسح الفلاتر</button>}
+            </div>
+
             <div className="admin-table-wrap" aria-busy={loading}>
               {loading && students.length > 0 && <p className="admin-loading-note" role="status">جارٍ تحديث النتائج...</p>}
               <p className="admin-table-scroll-note">تفاصيل كل طالب مرتبة ضمن مجموعات لتسهيل المراجعة</p>
@@ -371,12 +432,12 @@ export default function AdminDashboardPage() {
                   <th scope="col">الرسوم</th><th scope="col">تاريخ التسجيل</th><th scope="col">حالة الدفع</th><th scope="col">الإجراءات</th>
                 </tr></thead>
                 <tbody>
-                  {students.map((student) => (
+                  {pageStudents.map((student) => (
                     <tr key={student.id}>
                       <td data-label="الطالب">
                         <div className="admin-student-cell">
                           <span className="admin-student-avatar" aria-hidden="true">{student.full_name?.trim()?.charAt(0) || 'ط'}</span>
-                          <span className="admin-student-copy"><strong className="admin-student-name">{student.full_name}</strong><small dir="ltr">{student.university_id}</small></span>
+                          <button className="admin-student-open" type="button" onClick={() => setDetailsStudent(student)}><strong className="admin-student-name">{student.full_name}</strong><small dir="ltr">{student.university_id}</small></button>
                         </div>
                       </td>
                       <td data-label="التواصل والتخصص">
@@ -408,10 +469,37 @@ export default function AdminDashboardPage() {
                 <div className="admin-empty"><span className="admin-empty__icon"><Icon name="search" /></span><strong>ما لقينا نتائج</strong><span>جرّب تغيّر كلمة البحث أو فلتر الحالة</span></div>
               )}
             </div>
+            {!loading && students.length > 0 && <nav className="admin-pagination" aria-label="صفحات سجل الطلاب">
+              <span className="admin-pagination__range">عرض {firstVisibleRecord}–{lastVisibleRecord} من {sortedStudents.length} سجل</span>
+              <div className="admin-pagination__controls">
+                <button type="button" onClick={() => changePage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} aria-label="الصفحة السابقة">السابق</button>
+                {pageNumbers.map((page, index) => page === '…' ? <span className="admin-pagination__ellipsis" key={`dots-${index}`}>…</span> : <button key={page} type="button" className={currentPage === page ? 'is-current' : ''} aria-current={currentPage === page ? 'page' : undefined} onClick={() => changePage(page)}>{page}</button>)}
+                <button type="button" onClick={() => changePage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} aria-label="الصفحة التالية">التالي</button>
+              </div>
+              <span className="admin-pagination__size">10 سجلات في كل صفحة</span>
+            </nav>}
             <p className="admin-data-note">تأكيد الدفع بسجّل وقت العملية واسم الشخص اللي استلم الرسوم</p>
           </section>
         </div>
       </section>
+
+      {detailsStudent && <div className="admin-detail-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setDetailsStudent(null) }}>
+        <aside className="admin-detail-drawer" role="dialog" aria-modal="true" aria-labelledby="student-details-title" dir="rtl">
+          <header><div><span className="admin-section-kicker">ملف الطالب</span><h2 id="student-details-title">تفاصيل الانتساب</h2></div><button type="button" onClick={() => setDetailsStudent(null)} aria-label="إغلاق التفاصيل"><Icon name="close" /></button></header>
+          <div className="admin-detail-identity"><span className="admin-student-avatar">{detailsStudent.full_name?.trim()?.charAt(0) || 'ط'}</span><div><strong>{detailsStudent.full_name}</strong><small dir="ltr">{detailsStudent.university_id}</small></div></div>
+          <div className="admin-detail-list">
+            <div><span>التخصص</span><strong>{detailsStudent.major}</strong></div>
+            <div><span>رقم الواتساب</span><a href={`https://wa.me/${String(detailsStudent.whatsapp || '').replace(/\D/g, '')}`} target="_blank" rel="noreferrer" dir="ltr">{detailsStudent.whatsapp}</a></div>
+            <div><span>نوع الانتساب</span><strong>{detailsStudent.is_volunteer ? 'متطوع حالي' : 'انتساب عادي'}</strong></div>
+            {detailsStudent.is_volunteer && <div><span>اللجنة</span><strong>{COMMITTEE_LABELS[detailsStudent.volunteer_committee] || 'غير محددة'}</strong></div>}
+            <div><span>رسوم الانتساب</span><strong>{detailsStudent.membership_fee} شيكل</strong></div>
+            <div><span>تاريخ التسجيل</span><strong>{formatDate(detailsStudent.registered_at)}</strong></div>
+            <div><span>حالة الدفع</span><strong><span className={`admin-status admin-status--${detailsStudent.status}`}><i />{STATUS_LABELS[detailsStudent.status]}</span></strong></div>
+            {detailsStudent.status === 'active_member' && <><div><span>تأكيد الدفع</span><strong>{formatDate(detailsStudent.payment_confirmed_at)}</strong></div><div><span>مستلم الدفعة</span><strong>{detailsStudent.payment_confirmed_by_name || '—'}</strong></div></>}
+          </div>
+          <footer><button type="button" className="admin-drawer-edit" onClick={() => openEdit(detailsStudent)}><Icon name="edit" /> تعديل البيانات</button>{detailsStudent.status === 'pending_payment' && <button type="button" className="admin-modal__confirm" onClick={() => { setOperatorName(''); setSelectedStudent(detailsStudent); setDetailsStudent(null) }}>تأكيد الدفع</button>}</footer>
+        </aside>
+      </div>}
 
       {selectedStudent && (
         <div className="admin-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !savingPayment) setSelectedStudent(null) }}>
