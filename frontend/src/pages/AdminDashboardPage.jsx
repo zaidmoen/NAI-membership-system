@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { confirmStudentPayment, getMembershipSummary, getStudents } from '../api/adminApi'
+import { confirmStudentPayment, downloadStudentsCsv, getMembershipSummary, getStudents } from '../api/adminApi'
 import naiLogo from '../assets/nai-logo.png'
 import './admin-dashboard.css'
 
@@ -90,6 +90,8 @@ export default function AdminDashboardPage() {
   const [loginRequired, setLoginRequired] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState(null)
   const [savingPayment, setSavingPayment] = useState(false)
+  const [operatorName, setOperatorName] = useState('')
+  const [exportingCsv, setExportingCsv] = useState(false)
   const [notice, setNotice] = useState('')
   const [lastUpdated, setLastUpdated] = useState(null)
   const requestNumber = useRef(0)
@@ -137,7 +139,7 @@ export default function AdminDashboardPage() {
       }
       if (event.key !== 'Tab') return
 
-      const controls = document.querySelectorAll('.admin-modal button:not(:disabled)')
+      const controls = document.querySelectorAll('.admin-modal button:not(:disabled), .admin-modal input:not(:disabled)')
       if (!controls.length) {
         event.preventDefault()
         return
@@ -169,11 +171,11 @@ export default function AdminDashboardPage() {
   }, [statusFilter])
 
   const handleConfirm = async () => {
-    if (!selectedStudent) return
+    if (!selectedStudent || !operatorName.trim()) return
     setSavingPayment(true)
     setNotice('')
     try {
-      await confirmStudentPayment(selectedStudent.id)
+      await confirmStudentPayment(selectedStudent.id, operatorName.trim())
       setSelectedStudent(null)
       setNotice(`تم تأكيد انتساب ${selectedStudent.full_name} بنجاح`)
       await loadDashboard()
@@ -182,6 +184,19 @@ export default function AdminDashboardPage() {
       else setError(confirmError.message)
     } finally {
       setSavingPayment(false)
+    }
+  }
+
+  const handleExport = async () => {
+    setExportingCsv(true)
+    setError('')
+    try {
+      await downloadStudentsCsv({ search, status: statusFilter })
+    } catch (exportError) {
+      if (exportError.kind === 'unauthorized') setLoginRequired(true)
+      else setError(exportError.message)
+    } finally {
+      setExportingCsv(false)
     }
   }
 
@@ -241,9 +256,14 @@ export default function AdminDashboardPage() {
                 <h2>سجل الطلاب</h2>
                 <p>{filteredLabel} · {students.length} نتيجة{lastUpdated ? ` · آخر تحديث ${new Intl.DateTimeFormat('ar-JO', { hour: 'numeric', minute: '2-digit' }).format(lastUpdated)}` : ''}</p>
               </div>
-              <button className="admin-refresh" type="button" onClick={loadDashboard} disabled={loading}>
-                {loading ? 'جارٍ التحديث...' : 'تحديث البيانات'}
-              </button>
+              <div className="admin-panel__actions">
+                <button className="admin-export" type="button" onClick={handleExport} disabled={exportingCsv || students.length === 0}>
+                  {exportingCsv ? 'جارٍ تجهيز الملف...' : 'تصدير CSV'}
+                </button>
+                <button className="admin-refresh" type="button" onClick={loadDashboard} disabled={loading}>
+                  {loading ? 'جارٍ التحديث...' : 'تحديث البيانات'}
+                </button>
+              </div>
             </div>
 
             {notice && <p className="admin-notice" role="status"><Icon name="check" /> {notice}</p>}
@@ -279,11 +299,11 @@ export default function AdminDashboardPage() {
                       <td data-label="رقم الواتساب" dir="ltr">{student.whatsapp}</td>
                       <td data-label="تاريخ التسجيل">{formatDate(student.registered_at)}</td>
                       <td data-label="تأكيد الدفع">{formatDate(student.payment_confirmed_at)}</td>
-                      <td data-label="أكده">{student.payment_confirmed_by || '—'}</td>
+                      <td data-label="أكده">{student.payment_confirmed_by_name || '—'}</td>
                       <td data-label="الحالة"><span className={`admin-status admin-status--${student.status}`}><i />{STATUS_LABELS[student.status]}</span></td>
                       <td data-label="الإجراء">
                         {student.status === 'pending_payment' ? (
-                          <button className="admin-confirm" type="button" onClick={() => setSelectedStudent(student)}>تأكيد الدفع</button>
+                          <button className="admin-confirm" type="button" onClick={() => { setOperatorName(''); setSelectedStudent(student) }}>تأكيد الدفع</button>
                         ) : <span className="admin-confirmed"><Icon name="check" /> تم التأكيد</span>}
                       </td>
                     </tr>
@@ -295,7 +315,7 @@ export default function AdminDashboardPage() {
                 <div className="admin-empty"><span className="admin-empty__icon"><Icon name="search" /></span><strong>ما لقينا نتائج</strong><span>جرّب تغيّر كلمة البحث أو فلتر الحالة</span></div>
               )}
             </div>
-            <p className="admin-data-note">تأكيد الدفع بسجّل وقت العملية واسم المسؤول اللي أكدها</p>
+            <p className="admin-data-note">تأكيد الدفع بسجّل وقت العملية واسم الشخص اللي استلم الرسوم</p>
           </section>
         </div>
       </section>
@@ -307,9 +327,21 @@ export default function AdminDashboardPage() {
             <h2 id="confirm-title">تأكيد استلام الدفعة</h2>
             <p>متأكد إنك استلمت رسوم الانتساب من <strong>{selectedStudent.full_name}</strong>؟</p>
             <div className="admin-modal__student">الرقم الجامعي <b dir="ltr">{selectedStudent.university_id}</b></div>
+            <label className="admin-modal__operator">
+              <span>اسم الشخص اللي استلم الدفعة</span>
+              <input
+                type="text"
+                autoComplete="name"
+                maxLength={100}
+                value={operatorName}
+                onChange={(event) => setOperatorName(event.target.value)}
+                placeholder="اكتب اسمك الكامل"
+                required
+              />
+            </label>
             <div className="admin-modal__actions">
               <button type="button" className="admin-modal__cancel" ref={cancelButtonRef} onClick={() => setSelectedStudent(null)} disabled={savingPayment}>رجوع</button>
-              <button type="button" className="admin-modal__confirm" onClick={handleConfirm} disabled={savingPayment}>
+              <button type="button" className="admin-modal__confirm" onClick={handleConfirm} disabled={savingPayment || !operatorName.trim()}>
                 {savingPayment ? 'جارٍ التأكيد...' : 'نعم، أكد الدفع'}
               </button>
             </div>
