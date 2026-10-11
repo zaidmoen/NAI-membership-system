@@ -38,7 +38,7 @@ async function request(url, options = {}) {
   return data
 }
 
-export function getStudents({ search = '', status = '' } = {}) {
+export async function getStudents({ search = '', status = '' } = {}) {
   const params = new URLSearchParams()
   if (search.trim()) params.set('search', search.trim())
   if (status) params.set('status', status)
