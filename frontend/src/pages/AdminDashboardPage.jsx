@@ -121,6 +121,7 @@ export default function AdminDashboardPage() {
   const [lastUpdated, setLastUpdated] = useState(null)
   const requestNumber = useRef(0)
   const cancelButtonRef = useRef(null)
+  const detailCloseButtonRef = useRef(null)
 
   const loadDashboard = useCallback(async () => {
     const currentRequest = ++requestNumber.current
@@ -192,6 +193,41 @@ export default function AdminDashboardPage() {
       previousFocus?.focus?.()
     }
   }, [selectedStudent, savingPayment])
+
+  useEffect(() => {
+    if (!detailsStudent) return undefined
+
+    const previousFocus = document.activeElement
+    const previousOverflow = document.body.style.overflow
+    detailCloseButtonRef.current?.focus()
+    document.body.style.overflow = 'hidden'
+
+    const handleDrawerKeys = (event) => {
+      if (event.key === 'Escape') setDetailsStudent(null)
+      if (event.key !== 'Tab') return
+      const controls = document.querySelectorAll('.admin-detail-drawer button:not(:disabled), .admin-detail-drawer a')
+      if (!controls.length) {
+        event.preventDefault()
+        return
+      }
+      const firstControl = controls[0]
+      const lastControl = controls[controls.length - 1]
+      if (event.shiftKey && document.activeElement === firstControl) {
+        event.preventDefault()
+        lastControl.focus()
+      } else if (!event.shiftKey && document.activeElement === lastControl) {
+        event.preventDefault()
+        firstControl.focus()
+      }
+    }
+
+    window.addEventListener('keydown', handleDrawerKeys)
+    return () => {
+      window.removeEventListener('keydown', handleDrawerKeys)
+      document.body.style.overflow = previousOverflow
+      previousFocus?.focus?.()
+    }
+  }, [detailsStudent])
 
   const filteredLabel = useMemo(() => {
     const labels = []
@@ -485,7 +521,7 @@ export default function AdminDashboardPage() {
 
       {detailsStudent && <div className="admin-detail-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setDetailsStudent(null) }}>
         <aside className="admin-detail-drawer" role="dialog" aria-modal="true" aria-labelledby="student-details-title" dir="rtl">
-          <header><div><span className="admin-section-kicker">ملف الطالب</span><h2 id="student-details-title">تفاصيل الانتساب</h2></div><button type="button" onClick={() => setDetailsStudent(null)} aria-label="إغلاق التفاصيل"><Icon name="close" /></button></header>
+          <header><div><span className="admin-section-kicker">ملف الطالب</span><h2 id="student-details-title">تفاصيل الانتساب</h2></div><button type="button" ref={detailCloseButtonRef} onClick={() => setDetailsStudent(null)} aria-label="إغلاق التفاصيل"><Icon name="close" /></button></header>
           <div className="admin-detail-identity"><span className="admin-student-avatar">{detailsStudent.full_name?.trim()?.charAt(0) || 'ط'}</span><div><strong>{detailsStudent.full_name}</strong><small dir="ltr">{detailsStudent.university_id}</small></div></div>
           <div className="admin-detail-list">
             <div><span>التخصص</span><strong>{detailsStudent.major}</strong></div>
