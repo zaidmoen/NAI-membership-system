@@ -1,7 +1,8 @@
 import csv
 
+from django.core.paginator import Paginator
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Q, Sum
+from django.db.models import Case, Count, IntegerField, Q, Sum, Value, When
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -93,8 +94,38 @@ class StudentListView(APIView):
         if error:
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = AdminStudentSerializer(students, many=True)
-        return Response(serializer.data)
+        sort_option = request.query_params.get("sort", "newest").strip()
+        sort_ordering = {
+            "newest": ("-registered_at", "-id"),
+            "oldest": ("registered_at", "id"),
+            "name": ("full_name", "id"),
+        }
+        if sort_option == "pending":
+            students = students.order_by(
+                Case(
+                    When(status=Student.Status.PENDING_PAYMENT, then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField(),
+                ),
+                "-registered_at",
+                "-id",
+            )
+        elif sort_option in sort_ordering:
+            students = students.order_by(*sort_ordering[sort_option])
+        else:
+            return Response({"sort": ["Use newest, oldest, pending, or name"]}, status=status.HTTP_400_BAD_REQUEST)
+
+        page_size = 10
+        paginator = Paginator(students, page_size)
+        page = paginator.get_page(request.query_params.get("page", 1))
+        serializer = AdminStudentSerializer(page.object_list, many=True)
+        return Response({
+            "count": paginator.count,
+            "page": page.number,
+            "page_size": page_size,
+            "total_pages": paginator.num_pages,
+            "results": serializer.data,
+        })
 
 
 class StudentDetailView(APIView):
