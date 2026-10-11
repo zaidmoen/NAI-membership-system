@@ -242,6 +242,36 @@ class AdminStudentApiTests(TestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["university_id"], "10001")
 
+    def test_admin_can_filter_by_volunteer_and_committee(self):
+        Student.objects.create(
+            full_name="Lina Khalil",
+            major="Computer Science",
+            university_id="10001",
+            whatsapp="+970591234567",
+            is_volunteer=True,
+            volunteer_committee=Student.Committee.TECHNICAL,
+            membership_fee=10,
+        )
+        self.create_student("Omar Saleh", "10002")
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(
+            reverse("student-list"),
+            {"is_volunteer": "true", "volunteer_committee": Student.Committee.TECHNICAL},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["university_id"], "10001")
+
+    def test_invalid_volunteer_filter_is_rejected(self):
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(reverse("student-list"), {"is_volunteer": "sometimes"})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("is_volunteer", response.data)
+
     def test_admin_can_confirm_payment_once(self):
         student = self.create_student("Lina Khalil", "10001")
         self.client.force_authenticate(user=self.admin)
@@ -310,4 +340,6 @@ class AdminStudentApiTests(TestCase):
         self.assertEqual(response.data["total_students"], 2)
         self.assertEqual(response.data["pending_payment"], 2)
         self.assertEqual(response.data["active_members"], 0)
+        self.assertEqual(response.data["confirmed_fees"], 0)
+        self.assertEqual(response.data["pending_fees"], 40)
 
