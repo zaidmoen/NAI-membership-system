@@ -1,5 +1,8 @@
+import csv
+
 from django.db import IntegrityError, transaction
 from django.db.models import Count, Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -9,7 +12,32 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from members.models import Student
-from members.serializers import AdminStudentSerializer, StudentRegistrationSerializer
+from members.serializers import (
+    AdminStudentSerializer,
+    ConfirmPaymentSerializer,
+    StudentRegistrationSerializer,
+)
+
+
+def get_filtered_students(query_params):
+    students = Student.objects.all()
+    search_text = query_params.get("search", "").strip()
+    status_filter = query_params.get("status", "").strip()
+
+    if search_text:
+        students = students.filter(
+            Q(full_name__icontains=search_text)
+            | Q(university_id__icontains=search_text)
+            | Q(whatsapp__icontains=search_text)
+        )
+
+    allowed_statuses = [value for value, _label in Student.Status.choices]
+    if status_filter:
+        if status_filter not in allowed_statuses:
+            return None, {"status": ["Use pending_payment or active_member"]}
+        students = students.filter(status=status_filter)
+
+    return students, None
 
 
 @api_view(["GET"])
@@ -47,28 +75,51 @@ class StudentListView(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        students = Student.objects.all()
-        search_text = request.query_params.get("search", "").strip()
-        status_filter = request.query_params.get("status", "").strip()
-
-        if search_text:
-            students = students.filter(
-                Q(full_name__icontains=search_text)
-                | Q(university_id__icontains=search_text)
-                | Q(whatsapp__icontains=search_text)
-            )
-
-        allowed_statuses = [value for value, _label in Student.Status.choices]
-        if status_filter:
-            if status_filter not in allowed_statuses:
-                return Response(
-                    {"status": ["Use pending_payment or active_member"]},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            students = students.filter(status=status_filter)
+        students, error = get_filtered_students(request.query_params)
+        if error:
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = AdminStudentSerializer(students, many=True)
         return Response(serializer.data)
+
+
+class StudentExportView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        students, error = get_filtered_students(request.query_params)
+        if error:
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = 'attachment; filename="nai-members.csv"'
+        response.write("\ufeff")
+        writer = csv.writer(response)
+        writer.writerow([
+            "الاسم الكامل",
+            "الرقم الجامعي",
+            "التخصص",
+            "رقم الواتساب",
+            "حالة العضوية",
+            "تاريخ التسجيل",
+            "تاريخ تأكيد الدفع",
+            "اسم مستلم الدفعة",
+        ])
+
+        status_labels = dict(Student.Status.choices)
+        for student in students.order_by("full_name", "id"):
+            writer.writerow([
+                student.full_name,
+                student.university_id,
+                student.major,
+                student.whatsapp,
+                status_labels[student.status],
+                student.registered_at.isoformat(),
+                student.payment_confirmed_at.isoformat() if student.payment_confirmed_at else "",
+                student.payment_confirmed_by_name,
+            ])
+
+        return response
 
 
 class MembershipSummaryView(APIView):
@@ -93,6 +144,10 @@ class ConfirmPaymentView(APIView):
     permission_classes = [IsAdminUser]
 
     def post(self, request, student_id):
+        serializer = ConfirmPaymentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        confirmed_by_name = serializer.validated_data["confirmed_by_name"]
+
         # The status check makes sure only one request can confirm this payment
         with transaction.atomic():
             updated_rows = Student.objects.filter(
@@ -101,6 +156,7 @@ class ConfirmPaymentView(APIView):
             ).update(
                 status=Student.Status.ACTIVE_MEMBER,
                 payment_confirmed_at=timezone.now(),
+                payment_confirmed_by_name=confirmed_by_name,
                 payment_confirmed_by_id=request.user.id,
             )
 
@@ -115,3 +171,4 @@ class ConfirmPaymentView(APIView):
         student = Student.objects.get(id=student_id)
         serializer = AdminStudentSerializer(student)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
