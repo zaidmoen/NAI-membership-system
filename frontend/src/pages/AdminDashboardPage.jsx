@@ -360,7 +360,7 @@ export default function AdminDashboardPage() {
               <table className="admin-table">
                 <thead><tr>
                   <th scope="col">الطالب</th><th scope="col">الرقم الجامعي</th><th scope="col">التخصص</th>
-                  <th scope="col">رقم الواتساب</th><th scope="col">متطوع حالي</th><th scope="col">اللجنة</th>
+                  <th scope="col">رقم الواتساب</th><th scope="col">متطوع حالي</th><th scope="col">اللجنة</th><th scope="col">الرسوم</th>
                   <th scope="col">تاريخ التسجيل</th><th scope="col">تأكيد الدفع</th><th scope="col">مستلم الدفعة</th><th scope="col">الحالة</th><th scope="col">الإجراءات</th>
                 </tr></thead>
                 <tbody>
@@ -372,6 +372,7 @@ export default function AdminDashboardPage() {
                       <td data-label="رقم الواتساب" dir="ltr">{student.whatsapp}</td>
                       <td data-label="متطوع حالي">{student.is_volunteer ? 'نعم' : 'لا'}</td>
                       <td data-label="اللجنة">{student.is_volunteer ? (COMMITTEE_LABELS[student.volunteer_committee] || '—') : '—'}</td>
+                      <td data-label="الرسوم">{student.membership_fee} شيكل</td>
                       <td data-label="تاريخ التسجيل">{formatDate(student.registered_at)}</td>
                       <td data-label="تأكيد الدفع">{formatDate(student.payment_confirmed_at)}</td>
                       <td data-label="مستلم الدفعة">{student.payment_confirmed_by_name || '—'}</td>
@@ -406,6 +407,7 @@ export default function AdminDashboardPage() {
             <h2 id="confirm-title">تأكيد استلام الدفعة</h2>
             <p>متأكد إنك استلمت رسوم الانتساب من <strong>{selectedStudent.full_name}</strong>؟</p>
             <div className="admin-modal__student">الرقم الجامعي <b dir="ltr">{selectedStudent.university_id}</b></div>
+            <div className="admin-modal__student">المبلغ المطلوب <b>{selectedStudent.membership_fee} شيكل</b></div>
             <label className="admin-modal__operator">
               <span>اسم الشخص اللي استلم الدفعة</span>
               <input
@@ -440,6 +442,7 @@ export default function AdminDashboardPage() {
               <label>رقم الواتساب<input name="whatsapp" value={editForm.whatsapp} onChange={handleEditChange} maxLength={25} dir="ltr" required /></label>
             </div>
             <label className="admin-edit-volunteer"><input type="checkbox" name="is_volunteer" checked={editForm.is_volunteer} onChange={handleEditChange} /> متطوع حالي في الجمعية</label>
+            <p className="admin-edit-fee">رسوم الانتساب: <strong>{editingStudent.status === 'pending_payment' ? (editForm.is_volunteer ? 10 : 20) : editingStudent.membership_fee} شيكل</strong>{editingStudent.status !== 'pending_payment' ? ' (المبلغ المسجل عند تأكيد الدفع)' : ''}</p>
             {editForm.is_volunteer && (
               <label className="admin-edit-committee">اللجنة
                 <select name="volunteer_committee" value={editForm.volunteer_committee} onChange={handleEditChange} required>
