@@ -4,6 +4,7 @@ from members.views import (
     ConfirmPaymentView,
     MembershipSummaryView,
     StudentExportView,
+    StudentDetailView,
     StudentListView,
     StudentRegistrationView,
     health_check,
@@ -15,6 +16,7 @@ urlpatterns = [
     path("students/summary/", MembershipSummaryView.as_view(), name="membership-summary"),
     path("students/export/", StudentExportView.as_view(), name="student-export"),
     path("students/", StudentListView.as_view(), name="student-list"),
+    path("students/<int:student_id>/", StudentDetailView.as_view(), name="student-detail"),
     path(
         "students/<int:student_id>/confirm-payment/",
         ConfirmPaymentView.as_view(),

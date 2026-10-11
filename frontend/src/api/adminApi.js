@@ -67,6 +67,39 @@ export function confirmStudentPayment(studentId, confirmedByName) {
   })
 }
 
+export function updateStudent(studentId, studentData) {
+  const csrfToken = getCookie('csrftoken')
+  return request(`${STUDENTS_ENDPOINT}${studentId}/`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
+    },
+    body: JSON.stringify(studentData),
+  })
+}
+
+export async function deleteStudent(studentId) {
+  const csrfToken = getCookie('csrftoken')
+  let response
+  try {
+    response = await fetch(`${STUDENTS_ENDPOINT}${studentId}/`, {
+      method: 'DELETE',
+      credentials: 'same-origin',
+      headers: csrfToken ? { 'X-CSRFToken': csrfToken } : {},
+    })
+  } catch {
+    throw new Error('تعذر الاتصال بالخادم، تأكد أن Django يعمل وحاول مرة ثانية')
+  }
+
+  if (response.status === 401 || response.status === 403) {
+    const error = new Error('لازم تسجل دخولك بحساب أدمن عشان تحذف سجل الطالب')
+    error.kind = 'unauthorized'
+    throw error
+  }
+  if (!response.ok) throw new Error('ما قدرنا نحذف سجل الطالب، حاول مرة ثانية')
+}
+
 export async function downloadStudentsCsv({ search = '', status = '' } = {}) {
   const params = new URLSearchParams()
   if (search.trim()) params.set('search', search.trim())

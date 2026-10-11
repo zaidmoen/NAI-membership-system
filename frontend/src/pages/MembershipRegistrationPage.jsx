@@ -6,7 +6,14 @@ import { CheckIcon, GraduationIcon, IdIcon, PhoneIcon, UserIcon } from '../compo
 import { registerStudent, mapBackendErrors } from '../api/registrationApi'
 import { translateBackendMessage, validateRegistration } from '../utils/validation'
 
-const EMPTY = { full_name: '', major: '', university_id: '', whatsapp: '' }
+const EMPTY = {
+  full_name: '',
+  major: '',
+  university_id: '',
+  whatsapp: '',
+  is_volunteer: null,
+  volunteer_committee: '',
+}
 
 export default function MembershipRegistrationPage() {
   const [values, setValues] = useState(EMPTY)
@@ -29,6 +36,16 @@ export default function MembershipRegistrationPage() {
     const { name, value } = event.target
     setValues((prev) => ({ ...prev, [name]: value }))
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: undefined }))
+  }
+
+  const handleVolunteerChange = (event) => {
+    const isVolunteer = event.target.value === 'yes'
+    setValues((previous) => ({
+      ...previous,
+      is_volunteer: isVolunteer,
+      volunteer_committee: isVolunteer ? previous.volunteer_committee : '',
+    }))
+    setErrors((previous) => ({ ...previous, is_volunteer: undefined, volunteer_committee: undefined }))
   }
 
   const handleBackToWelcome = () => {
@@ -85,7 +102,7 @@ export default function MembershipRegistrationPage() {
             <span className="success__status-dot" aria-hidden="true" />
             <span>حالة طلبك: بانتظار الدفع</span>
           </div>
-          <p className="notice">بعد دفع رسوم الانتساب عند طاولة الجمعية، الإدارة بتأكد عضويتك وبتصير عضو فعال. ما في داعي تعيد التسجيل.</p>
+          <p className="notice">رسوم الانتساب 10. بعد الدفع عند طاولة الجمعية، الإدارة بتأكد عضويتك وبتصير عضو فعال. ما في داعي تعيد التسجيل.</p>
         </div>
       ) : (
         <>
@@ -111,9 +128,34 @@ export default function MembershipRegistrationPage() {
             <Field label="رقم الواتساب" icon={<PhoneIcon />} name="whatsapp" type="tel" value={values.whatsapp}
               onChange={handleChange} error={errors.whatsapp} hint="عشان نقدر نتواصل معك بخصوص الانتساب" placeholder="مثال: 0591234567" ltr inputMode="tel" autoComplete="tel" />
 
+            <fieldset className={`choice-field${errors.is_volunteer ? ' choice-field--error' : ''}`}>
+              <legend>هل أنت من متطوعي جمعية ناي حاليًا؟</legend>
+              <p>هذا السؤال للمتطوعين الحاليين فقط، والتسجيل هنا للانتساب كعضو</p>
+              <div className="choice-field__options">
+                <label><input type="radio" name="current-volunteer" value="yes" checked={values.is_volunteer === true} onChange={handleVolunteerChange} /> نعم، أنا متطوع حالي</label>
+                <label><input type="radio" name="current-volunteer" value="no" checked={values.is_volunteer === false} onChange={handleVolunteerChange} /> لا</label>
+              </div>
+              {errors.is_volunteer && <span className="choice-field__error" role="alert">{errors.is_volunteer}</span>}
+            </fieldset>
+
+            {values.is_volunteer === true && (
+              <div className={`choice-field choice-field--committee${errors.volunteer_committee ? ' choice-field--error' : ''}`}>
+                <label htmlFor="volunteer-committee">اللجنة التي تتطوع فيها</label>
+                <select id="volunteer-committee" name="volunteer_committee" value={values.volunteer_committee} onChange={handleChange} aria-invalid={Boolean(errors.volunteer_committee)}>
+                  <option value="">اختر لجنتك</option>
+                  <option value="public_relations">العلاقات العامة</option>
+                  <option value="activities">الأنشطة</option>
+                  <option value="technical">اللجنة التقنية</option>
+                  <option value="media">اللجنة الإعلامية</option>
+                  <option value="ai_activities">أنشطة الذكاء الاصطناعي المتخصصة</option>
+                </select>
+                {errors.volunteer_committee && <span className="choice-field__error" role="alert">{errors.volunteer_committee}</span>}
+              </div>
+            )}
+
             <p className="form-note">
               <span className="form-note__dot" aria-hidden="true" />
-              طلبك بضل بانتظار الدفع، والإدارة بتأكد انتسابك بعد ما تدفع عند الطاولة
+              رسوم الانتساب 10، وطلبك بضل بانتظار الدفع لحد ما تأكد الإدارة استلامها عند الطاولة
             </p>
 
             <button className="btn btn--primary" type="submit" disabled={loading} aria-busy={loading}>

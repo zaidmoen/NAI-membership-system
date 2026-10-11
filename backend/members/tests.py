@@ -15,6 +15,8 @@ class StudentRegistrationTests(TestCase):
             "major": "Computer Science",
             "university_id": "0012345",
             "whatsapp": "+970 59 123 4567",
+            "is_volunteer": False,
+            "volunteer_committee": "",
         }
 
     def test_student_can_register_with_required_membership_details(self):
@@ -35,7 +37,31 @@ class StudentRegistrationTests(TestCase):
         self.assertEqual(student.major, "Computer Science")
         self.assertEqual(student.whatsapp, "+970591234567")
         self.assertEqual(student.status, Student.Status.PENDING_PAYMENT)
+        self.assertFalse(student.is_volunteer)
         self.assertEqual(response.data["status"], Student.Status.PENDING_PAYMENT)
+
+    def test_existing_volunteer_can_register_with_their_committee(self):
+        response = self.client.post(
+            self.registration_url,
+            {**self.valid_data, "is_volunteer": True, "volunteer_committee": Student.Committee.TECHNICAL},
+            format="json",
+        )
+
+        student = Student.objects.get(university_id="0012345")
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(student.is_volunteer)
+        self.assertEqual(student.volunteer_committee, Student.Committee.TECHNICAL)
+
+    def test_current_volunteer_must_choose_a_committee(self):
+        response = self.client.post(
+            self.registration_url,
+            {**self.valid_data, "is_volunteer": True},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("volunteer_committee", response.data)
+        self.assertEqual(Student.objects.count(), 0)
 
     def test_duplicate_university_id_is_rejected(self):
         Student.objects.create(
@@ -129,6 +155,50 @@ class AdminStudentApiTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["full_name"], "Omar Saleh")
+
+    def test_admin_can_edit_student_details_and_volunteer_committee(self):
+        student = self.create_student("Lina Khalil", "10001")
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.patch(
+            reverse("student-detail", args=[student.id]),
+            {
+                "full_name": "Lina K",
+                "is_volunteer": True,
+                "volunteer_committee": Student.Committee.TECHNICAL,
+            },
+            format="json",
+        )
+
+        student.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(student.full_name, "Lina K")
+        self.assertTrue(student.is_volunteer)
+        self.assertEqual(student.volunteer_committee, Student.Committee.TECHNICAL)
+
+    def test_admin_can_delete_student_record(self):
+        student = self.create_student("Lina Khalil", "10001")
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.delete(reverse("student-detail", args=[student.id]))
+
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(Student.objects.filter(id=student.id).exists())
+
+    def test_student_edit_rejects_duplicate_university_id(self):
+        student = self.create_student("Lina Khalil", "10001")
+        self.create_student("Omar Saleh", "10002")
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.patch(
+            reverse("student-detail", args=[student.id]),
+            {"university_id": "10002"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        student.refresh_from_db()
+        self.assertEqual(student.university_id, "10001")
 
     def test_admin_can_search_by_whatsapp_number(self):
         self.create_student("Lina Khalil", "10001", whatsapp="+970591111111")

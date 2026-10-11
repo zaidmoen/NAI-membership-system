@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 from members.models import Student
 from members.serializers import (
     AdminStudentSerializer,
+    AdminStudentUpdateSerializer,
     ConfirmPaymentSerializer,
     StudentRegistrationSerializer,
 )
@@ -83,6 +84,22 @@ class StudentListView(APIView):
         return Response(serializer.data)
 
 
+class StudentDetailView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def patch(self, request, student_id):
+        student = get_object_or_404(Student, id=student_id)
+        serializer = AdminStudentUpdateSerializer(student, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(AdminStudentSerializer(student).data, status=status.HTTP_200_OK)
+
+    def delete(self, request, student_id):
+        student = get_object_or_404(Student, id=student_id)
+        student.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class StudentExportView(APIView):
     permission_classes = [IsAdminUser]
 
@@ -100,6 +117,8 @@ class StudentExportView(APIView):
             "الرقم الجامعي",
             "التخصص",
             "رقم الواتساب",
+            "متطوع حالي",
+            "اللجنة",
             "حالة العضوية",
             "تاريخ التسجيل",
             "تاريخ تأكيد الدفع",
@@ -107,12 +126,15 @@ class StudentExportView(APIView):
         ])
 
         status_labels = dict(Student.Status.choices)
+        committee_labels = dict(Student.Committee.choices)
         for student in students.order_by("full_name", "id"):
             writer.writerow([
                 student.full_name,
                 student.university_id,
                 student.major,
                 student.whatsapp,
+                "نعم" if student.is_volunteer else "لا",
+                committee_labels.get(student.volunteer_committee, "") if student.is_volunteer else "",
                 status_labels[student.status],
                 student.registered_at.isoformat(),
                 student.payment_confirmed_at.isoformat() if student.payment_confirmed_at else "",

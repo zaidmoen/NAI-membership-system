@@ -10,6 +10,8 @@ class StudentAdmin(admin.ModelAdmin):
         "major",
         "university_id",
         "whatsapp",
+        "is_volunteer",
+        "volunteer_committee",
         "status",
         "registered_at",
         "payment_confirmed_at",
@@ -21,6 +23,8 @@ class StudentAdmin(admin.ModelAdmin):
         "major",
         "university_id",
         "whatsapp",
+        "is_volunteer",
+        "volunteer_committee",
         "status",
         "registered_at",
         "payment_confirmed_at",
@@ -32,3 +36,4 @@ class StudentAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+

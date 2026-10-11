@@ -6,6 +6,7 @@ export function validateRegistration(values) {
   const major = (values.major || '').trim()
   const universityId = (values.university_id || '').trim()
   const whatsapp = (values.whatsapp || '').trim()
+  const committees = ['public_relations', 'activities', 'technical', 'media', 'ai_activities']
 
   if (!name) errors.full_name = REQUIRED
   else if (name.length > 150) errors.full_name = 'الاسم طويل جدًا'
@@ -24,6 +25,12 @@ export function validateRegistration(values) {
     }
   }
 
+  if (values.is_volunteer !== true && values.is_volunteer !== false) {
+    errors.is_volunteer = 'حدد إذا كنت متطوعًا حاليًا'
+  } else if (values.is_volunteer && !committees.includes(values.volunteer_committee)) {
+    errors.volunteer_committee = 'اختر اللجنة التي تتطوع فيها'
+  }
+
   return errors
 }
 
@@ -32,6 +39,7 @@ export function translateBackendMessage(message) {
   const text = String(message).toLowerCase()
   if (text.includes('already registered')) return 'هذا الرقم الجامعي مسجل مسبقًا'
   if (text.includes('valid whatsapp')) return 'أدخل رقم واتساب صحيح'
+  if (text.includes('choose a committee')) return 'اختر اللجنة التي تتطوع فيها'
   if (text.includes('blank') || text.includes('required') || text.includes('enter the')) return REQUIRED
   if (text.includes('no more than')) return 'القيمة المدخلة طويلة جدًا'
   return 'تحقق من القيمة المدخلة'
