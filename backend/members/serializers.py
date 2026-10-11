@@ -58,6 +58,18 @@ class AdminStudentSerializer(serializers.ModelSerializer):
             "status",
             "registered_at",
             "payment_confirmed_at",
+            "payment_confirmed_by_name",
             "payment_confirmed_by",
         ]
         read_only_fields = fields
+
+
+class ConfirmPaymentSerializer(serializers.Serializer):
+    confirmed_by_name = serializers.CharField(max_length=100, trim_whitespace=True)
+
+    def validate_confirmed_by_name(self, value):
+        cleaned_name = " ".join(value.split())
+        if not cleaned_name:
+            raise serializers.ValidationError("Enter the name of the person who received the payment")
+        return cleaned_name
+
