@@ -97,6 +97,7 @@ function LoginRequired() {
 
 export default function AdminDashboardPage() {
   const [students, setStudents] = useState([])
+  const [totalCount, setTotalCount] = useState(0)
   const [summary, setSummary] = useState(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -128,12 +129,13 @@ export default function AdminDashboardPage() {
     setLoading(true)
     setError('')
     try {
-      const [studentRows, totals] = await Promise.all([
-        getStudents({ search, status: statusFilter, isVolunteer: volunteerFilter, committee: committeeFilter }),
+      const [studentResult, totals] = await Promise.all([
+        getStudents({ search, status: statusFilter, isVolunteer: volunteerFilter, committee: committeeFilter, page: currentPage, sort: sortBy }),
         getMembershipSummary(),
       ])
       if (currentRequest !== requestNumber.current) return
-      setStudents(studentRows)
+      setStudents(studentResult.results)
+      setTotalCount(studentResult.count)
       setSummary(totals)
       setLastUpdated(new Date())
       setLoginRequired(false)
@@ -144,7 +146,7 @@ export default function AdminDashboardPage() {
     } finally {
       if (currentRequest === requestNumber.current) setLoading(false)
     }
-  }, [search, statusFilter, volunteerFilter, committeeFilter])
+  }, [search, statusFilter, volunteerFilter, committeeFilter, currentPage, sortBy])
 
   useEffect(() => {
     const timeout = window.setTimeout(loadDashboard, search ? 250 : 0)
@@ -240,21 +242,11 @@ export default function AdminDashboardPage() {
     return labels.join(' · ')
   }, [statusFilter, volunteerFilter, committeeFilter])
 
-  const sortedStudents = useMemo(() => [...students].sort((a, b) => {
-    if (sortBy === 'oldest') return new Date(a.registered_at) - new Date(b.registered_at)
-    if (sortBy === 'name') return a.full_name.localeCompare(b.full_name, 'ar')
-    if (sortBy === 'pending') {
-      const statusOrder = (a.status === 'pending_payment' ? 0 : 1) - (b.status === 'pending_payment' ? 0 : 1)
-      if (statusOrder) return statusOrder
-      return new Date(b.registered_at) - new Date(a.registered_at)
-    }
-    return new Date(b.registered_at) - new Date(a.registered_at)
-  }), [students, sortBy])
   const pageSize = 10
-  const totalPages = Math.max(1, Math.ceil(sortedStudents.length / pageSize))
-  const pageStudents = sortedStudents.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-  const firstVisibleRecord = sortedStudents.length ? (currentPage - 1) * pageSize + 1 : 0
-  const lastVisibleRecord = Math.min(currentPage * pageSize, sortedStudents.length)
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
+  const pageStudents = students
+  const firstVisibleRecord = totalCount ? (currentPage - 1) * pageSize + 1 : 0
+  const lastVisibleRecord = Math.min(currentPage * pageSize, totalCount)
   const pageNumbers = useMemo(() => {
     const numbers = []
     for (let page = 1; page <= totalPages; page += 1) {
@@ -423,10 +415,10 @@ export default function AdminDashboardPage() {
               <div>
                 <span className="admin-section-kicker">قاعدة بيانات الجمعية</span>
                 <h2>سجل الطلاب</h2>
-                <p>{filteredLabel} <span className="admin-result-count">{students.length} سجل</span>{lastUpdated ? ` · آخر تحديث ${new Intl.DateTimeFormat('ar-JO', { hour: 'numeric', minute: '2-digit' }).format(lastUpdated)}` : ''}</p>
+                <p>{filteredLabel} <span className="admin-result-count">{totalCount} سجل</span>{lastUpdated ? ` · آخر تحديث ${new Intl.DateTimeFormat('ar-JO', { hour: 'numeric', minute: '2-digit' }).format(lastUpdated)}` : ''}</p>
               </div>
               <div className="admin-panel__actions">
-                <button className="admin-export" type="button" onClick={handleExport} disabled={exportingCsv || students.length === 0}>
+                <button className="admin-export" type="button" onClick={handleExport} disabled={exportingCsv || totalCount === 0}>
                   {exportingCsv ? 'جارٍ تجهيز الملف...' : 'تصدير CSV'}
                 </button>
                 <button className="admin-refresh" type="button" onClick={loadDashboard} disabled={loading}>
@@ -501,12 +493,12 @@ export default function AdminDashboardPage() {
                 </tbody>
               </table>
               {loading && <div className="admin-empty"><span className="admin-spinner" /> جارٍ تحميل بيانات الطلاب</div>}
-              {!loading && !error && students.length === 0 && (
+              {!loading && !error && totalCount === 0 && (
                 <div className="admin-empty"><span className="admin-empty__icon"><Icon name="search" /></span><strong>ما لقينا نتائج</strong><span>جرّب تغيّر كلمة البحث أو فلتر الحالة</span></div>
               )}
             </div>
-            {!loading && students.length > 0 && <nav className="admin-pagination" aria-label="صفحات سجل الطلاب">
-              <span className="admin-pagination__range">عرض {firstVisibleRecord}–{lastVisibleRecord} من {sortedStudents.length} سجل</span>
+            {!loading && totalCount > 0 && <nav className="admin-pagination" aria-label="صفحات سجل الطلاب">
+              <span className="admin-pagination__range">عرض {firstVisibleRecord}–{lastVisibleRecord} من {totalCount} سجل</span>
               <div className="admin-pagination__controls">
                 <button type="button" onClick={() => changePage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} aria-label="الصفحة السابقة">السابق</button>
                 {pageNumbers.map((page, index) => page === '…' ? <span className="admin-pagination__ellipsis" key={`dots-${index}`}>…</span> : <button key={page} type="button" className={currentPage === page ? 'is-current' : ''} aria-current={currentPage === page ? 'page' : undefined} onClick={() => changePage(page)}>{page}</button>)}
